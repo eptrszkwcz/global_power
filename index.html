@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Powering Europe</title>
+
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+
+<!-- <link href="css/legend.css" rel="stylesheet" type="text/css">   -->
+<link href="css/popup.css" rel="stylesheet" type="text/css">  
+<link href="css/filter.css" rel="stylesheet" type="text/css"> 
+<link href="css/analtog.css" rel="stylesheet" type="text/css"> 
+<!-- <link href="css/toggle.css" rel="stylesheet" type="text/css"> -->
+<link href="css/var.css" rel="stylesheet" type="text/css"> 
+<link href="css/console.css" rel="stylesheet" type="text/css"> 
+
+
+<style>
+
+body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;}
+#map { position: absolute; top: 0; bottom: 0; width: 100%; }
+
+
+</style>
+</head>
+<body>
+<div id="map"></div>
+<!-- <nav id="filter-group" class="filter-group"></nav> -->
+
+<!-- LEGEND -->
+
+<div class = "console_butt" id="console_butt-id" onclick="toggleNav()">
+    <div class = "console_butt_text">
+        <a>&#9664</a>
+    </div>
+</div>
+
+<div class = "console" id="console-id">
+    <div class = "title-block">
+        <div class = "title">Powering Europe</div>
+        <div class = "leg-line"></div>
+        <div class = "proj-des">Western and Central Europe is home to over 17,000 power generation facilities. This map catalogs their location, generating capacity, and other features.</div>
+        <!-- <p>Source: Global Power Dataset 1.3.0, World Resources Institue 2021.</p> -->
+        <br>
+        <div class = "proj-des">Source: Global Power Dataset 1.3.0, World Resources Institue 2021.</div>
+    </div>
+    <div class = "title-block">
+        <div class = "legend-label">Primary Fuel</div>
+        <div class = "legend" id = "toggle group">
+
+            <div class = "legend-entry active">
+                <div class = "symbol active" style="background-color: #9e5418;" id="Biomass_symbol"></div>
+                <div class = "symbol-label active">Biomass</div>
+                <div class = "toggle-space">
+                    <div class = "toggle active" id = "Biomass"></div>
+                </div>
+            </div>
+
+            <div class = "legend-entry active">
+                <div class = "symbol active" style="background-color: #fc0303;" id="Coal_symbol"></div>
+                <div class = "symbol-label active">Coal</div>
+                <div class = "toggle-space">
+                    <div class = "toggle active" id = "Coal"></div>
+                </div>
+            </div>
+
+            <div class = "legend-entry active">
+                <div class = "symbol active" style="background-color: #e01075;" id="Gas_symbol"></div>
+                <div class = "symbol-label active">Gas</div>
+                <div class = "toggle-space">
+                    <div class = "toggle active" id = "Gas"></div>
+                </div>
+            </div>
+
+            <div class = "legend-entry active">
+                <div class = "symbol active" style="background-color: #8800ff;" id="Geothermal_symbol"></div>
+                <div class = "symbol-label active">Geothermal</div>
+                <div class = "toggle-space">
+                    <div class = "toggle active" id = "Geothermal"></div>
+                </div>
+            </div>
+
+            <div class = "legend-entry active">
+                <div class = "symbol active" style="background-color: #0398fc;" id="Hydro_symbol"></div>
+                <div class = "symbol-label active">Hydro</div>
+                <div class = "toggle-space">
+                    <div class = "toggle active" id = "Hydro"></div>
+                </div>
+            </div>
+
+            <div class = "legend-entry active">
+                <div class = "symbol active" style="background-color: #ff00f7;" id="Nuclear_symbol"></div>
+                <div class = "symbol-label active">Nuclear</div>
+                <div class = "toggle-space">
+                    <div class = "toggle active" id = "Nuclear"></div>
+                </div>
+            </div>
+
+            <div class = "legend-entry active">
+                <div class = "symbol active" style="background-color: #eb7f7f;" id="Oil_symbol"></div>
+                <div class = "symbol-label active">Oil</div>
+                <div class = "toggle-space">
+                    <div class = "toggle active" id = "Oil"></div>
+                </div>
+            </div>
+
+            <div class = "legend-entry active">
+                <div class = "symbol active" style="background-color: #e3bb0e;" id="Solar_symbol"></div>
+                <div class = "symbol-label active">Solar</div>
+                <div class = "toggle-space">
+                    <div class = "toggle active" id = "Solar"></div>
+                </div>
+            </div>
+
+            <div class = "legend-entry active">
+                <div class = "symbol active" style="background-color: #1859c9;" id="Tidal_symbol"></div>
+                <div class = "symbol-label active">Tidal</div>
+                <div class = "toggle-space">
+                    <div class = "toggle active" id = "Tidal"></div>
+                </div>
+            </div>
+
+            <div class = "legend-entry active" style = "margin-bottom: 0;">
+                <div class = "symbol active" style="background-color: #12c474;" id="Wind_symbol"></div>
+                <div class = "symbol-label active">Wind</div>
+                <div class = "toggle-space">
+                    <div class = "toggle active" id = "Wind"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class = "title-block">
+            <!-- SIZE LEGEND ENTRY  -->
+            <div class = "entry-dropdown active" id="entry-0">
+                <div class = "entry-row">
+                    <div class = "legend-label">Plant Capacity</div>
+                </div>
+                <div class = "entry-row size">
+                    <div class = "circle-container">
+                        <div class = "size-circle small"></div>
+                    </div>
+                    <div class = "circle-container">
+                        <div class = "size-circle med"></div>
+                    </div>
+                    <div class = "circle-container">
+                        <div class = "size-circle large"></div>
+                    </div>
+                </div>
+                <div class = "entry-row size">
+                    <div class = "circle-container">
+                        <div class = "size-label">100 MW</div>
+                    </div>
+                    <div class = "circle-container">
+                        <div class = "size-label">2.5k MW</div>
+                    </div>
+                    <div class = "circle-container">
+                        <div class = "size-label">5k MW</div>
+                    </div>
+                </div>
+                <div class = "entry-row">
+                    <div class = "entry-description">
+                        The plant's capacity to generate energy over the course of 1 hour (megawatts).
+                    </div>
+                </div>
+            </div>
+            <div class = "entry-dropdown" id="entry-1">
+                <div class = "entry-row">
+                    <div class = "legend-label">Generated Power</div>
+                </div>
+                <div class = "entry-row size">
+                    <div class = "circle-container">
+                        <div class = "size-circle small"></div>
+                    </div>
+                    <div class = "circle-container">
+                        <div class = "size-circle med"></div>
+                    </div>
+                    <div class = "circle-container">
+                        <div class = "size-circle large"></div>
+                    </div>
+                </div>
+                <div class = "entry-row size">
+                    <div class = "circle-container">
+                        <div class = "size-label">5k</div>
+                    </div>
+                    <div class = "circle-container">
+                        <div class = "size-label">15k</div>
+                    </div>
+                    <div class = "circle-container">
+                        <div class = "size-label">30k</div>
+                    </div>
+                </div>
+                <div class = "entry-row">
+                    <div class = "entry-description">
+                        Power generated over the course of a full year (gigawatts).
+                    </div>
+                </div>
+            </div>
+            <div class = "entry-dropdown" id="entry-2">
+                <div class = "entry-row">
+                    <div class = "legend-label">Capacity Factor</div>
+                </div>
+                <div class = "entry-row size">
+                    <div class = "circle-container">
+                        <div class = "size-circle small"></div>
+                    </div>
+                    <div class = "circle-container">
+                        <div class = "size-circle med"></div>
+                    </div>
+                    <div class = "circle-container">
+                        <div class = "size-circle large"></div>
+                    </div>
+                </div>
+                <div class = "entry-row size">
+                    <div class = "circle-container">
+                        <div class = "size-label">50%</div>
+                    </div>
+                    <div class = "circle-container">
+                        <div class = "size-label">75%</div>
+                    </div>
+                    <div class = "circle-container">
+                        <div class = "size-label">100%</div>
+                    </div>
+                </div>
+                <div class = "entry-row">
+                    <div class = "entry-description">
+                        The ratio of generated energy to what would be generated in a year-long max-capacity scenario. 
+                    </div>
+                </div>
+            </div>
+    </div>
+
+</div>
+
+<div class="dropdown">
+    <button class = "legendtit" id="dropdown-butt">Plant Capacity</button>
+    <div class="dropdown-options">
+      <a id = "anal1" class = "checked">Plant Capacity</a>
+      <a id = "anal2" class = "nocheck">Generated Power</a>
+      <a id = "anal3" class = "nocheck">Capacity Factor</a>
+    </div>
+</div>
+
+<div class="chartpop">
+    
+</div>
+
+
+
+<!-- <div id="elementToHover">Hover Over Content- Javascript Approach</div> -->
+<div class = "triangle" id = "popup tip"></div>
+<div class = "instruct" id="instruct-anal">Click below to change the analysis being displayed</div>
+<div class = "instruct" id="instruct-tog">Use the toggle swithces to turn layers on/off.</div>
+<!-- <div id="elementToPopup_toggle">Click to turn layer on/off</div> -->
+
+<!-- <div id='analtog'> 
+    <div class='session checked' id = "anal1">
+        <span class="dotlable">Plant Capacity</span><span class="checkmark">✔</span>
+    </div>
+    <div class='session checked' id = "anal2">
+        <span class="dotlable">Generated Power</span><span class="checkmark">✔</span>
+    </div>
+    <div class='session checked' id = "anal3">
+        <span class="dotlable">Capacity Factor</span><span class="checkmark">✔</span>
+    </div>
+</div> -->
+
+    
+</div>
+
+<script src="script.js"></script>
+ 
+</body>
+</html> 

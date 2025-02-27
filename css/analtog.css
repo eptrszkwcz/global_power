@@ -1,0 +1,112 @@
+#analtog {
+    position: absolute;
+    border-radius: 3px;
+    width: 240px;
+    padding: 10px 20px;
+    margin: 15px;
+    bottom: 25px;
+    background-color: var(--bg_color);
+    /* opacity: 0.8; */
+  }
+
+.legendtit {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 20px;
+    color: var(--prim_color);
+    margin-bottom: 15px;
+}
+
+.dropdown {
+    position: absolute;
+    /* width: 220px; */
+    top: 25px;
+    right: 20px; 
+}
+
+button{
+    width: 220px;
+    border:none;
+    border-radius:3px;
+    padding:15px 30px;
+    /* font-size:18px; */
+    color:  var(--prim_color);
+    cursor:pointer;
+    background-color: var(--bg_color);
+}
+
+button:hover{
+    background-color: var(--bghov_color);
+}
+
+.dropdown-options {
+    width: 220px;
+    font-size: 14px;
+    display: none;
+    position: absolute;
+    overflow: auto;
+    background-color:var(--bg_color);
+    border-radius:3px;
+    box-shadow: 0px 10px 10px 0px rgba(0,0,0,0.4);
+    cursor:pointer;
+}
+
+.dropdown:hover .dropdown-options {
+    display: block;
+}
+
+.dropdown-options a {
+    display: block;
+    color: var(--sec_color);
+    padding: 3px;
+    text-decoration: none;
+    padding:20px 40px;
+}
+
+.dropdown-options a.checked{
+    display: block;
+    color: var(--prim_color);
+    padding: 3px;
+    text-decoration: none;
+    padding:20px 40px;
+}
+
+.dropdown-options a:hover {
+    /* color: #0a0a23; */
+    background-color: var(--bghov_color);
+    border-radius:5px;
+}
+
+#elementToHover {
+    display: inline-block;
+    position: relative;
+}
+
+
+.instruct {
+    display: none;
+    /* left: 50%;  */
+    transform: translate(-50%, -5%); 
+    position: absolute;
+    font-size: 12px;
+    font-weight: 400;
+    /* background-color: var(--bg_color); */
+    background-color: #037ffc;
+    opacity: 0.8;
+    color: #fff;
+    padding: 8px;
+    border-radius: 5px;
+    transition-property: display;
+    transition-delay: 5s;
+}
+
+.triangle {
+    display: none;
+    position: absolute;
+    width: 0; 
+    height: 0; 
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 10px solid #037ffc;
+    opacity: 0.8;
+}
