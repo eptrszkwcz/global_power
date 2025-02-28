@@ -16,6 +16,7 @@
 <!-- <link href="css/toggle.css" rel="stylesheet" type="text/css"> -->
 <link href="css/var.css" rel="stylesheet" type="text/css"> 
 <link href="css/console.css" rel="stylesheet" type="text/css"> 
+<link href="css/graphpop.css" rel="stylesheet" type="text/css">
 
 
 <style>
@@ -52,14 +53,6 @@ body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, s
         <div class = "legend" id = "toggle group">
 
             <div class = "legend-entry active">
-                <div class = "symbol active" style="background-color: #9e5418;" id="Biomass_symbol"></div>
-                <div class = "symbol-label active">Biomass</div>
-                <div class = "toggle-space">
-                    <div class = "toggle active" id = "Biomass"></div>
-                </div>
-            </div>
-
-            <div class = "legend-entry active">
                 <div class = "symbol active" style="background-color: #fc0303;" id="Coal_symbol"></div>
                 <div class = "symbol-label active">Coal</div>
                 <div class = "toggle-space">
@@ -76,10 +69,34 @@ body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, s
             </div>
 
             <div class = "legend-entry active">
+                <div class = "symbol active" style="background-color: #eb7f7f;" id="Oil_symbol"></div>
+                <div class = "symbol-label active">Oil</div>
+                <div class = "toggle-space">
+                    <div class = "toggle active" id = "Oil"></div>
+                </div>
+            </div>
+
+            <div class = "legend-entry active">
+                <div class = "symbol active" style="background-color: #9e5418;" id="Biomass_symbol"></div>
+                <div class = "symbol-label active">Biomass</div>
+                <div class = "toggle-space">
+                    <div class = "toggle active" id = "Biomass"></div>
+                </div>
+            </div>
+
+            <div class = "legend-entry active">
                 <div class = "symbol active" style="background-color: #8800ff;" id="Geothermal_symbol"></div>
                 <div class = "symbol-label active">Geothermal</div>
                 <div class = "toggle-space">
                     <div class = "toggle active" id = "Geothermal"></div>
+                </div>
+            </div>
+
+            <div class = "legend-entry active">
+                <div class = "symbol active" style="background-color: #1859c9;" id="Tidal_symbol"></div>
+                <div class = "symbol-label active">Tidal</div>
+                <div class = "toggle-space">
+                    <div class = "toggle active" id = "Tidal"></div>
                 </div>
             </div>
 
@@ -91,19 +108,11 @@ body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, s
                 </div>
             </div>
 
-            <div class = "legend-entry active">
-                <div class = "symbol active" style="background-color: #ff00f7;" id="Nuclear_symbol"></div>
-                <div class = "symbol-label active">Nuclear</div>
+            <div class = "legend-entry active" >
+                <div class = "symbol active" style="background-color: #12c474;" id="Wind_symbol"></div>
+                <div class = "symbol-label active">Wind</div>
                 <div class = "toggle-space">
-                    <div class = "toggle active" id = "Nuclear"></div>
-                </div>
-            </div>
-
-            <div class = "legend-entry active">
-                <div class = "symbol active" style="background-color: #eb7f7f;" id="Oil_symbol"></div>
-                <div class = "symbol-label active">Oil</div>
-                <div class = "toggle-space">
-                    <div class = "toggle active" id = "Oil"></div>
+                    <div class = "toggle active" id = "Wind"></div>
                 </div>
             </div>
 
@@ -116,18 +125,18 @@ body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, s
             </div>
 
             <div class = "legend-entry active">
-                <div class = "symbol active" style="background-color: #1859c9;" id="Tidal_symbol"></div>
-                <div class = "symbol-label active">Tidal</div>
+                <div class = "symbol active" style="background-color: #ff00f7;" id="Nuclear_symbol"></div>
+                <div class = "symbol-label active">Nuclear</div>
                 <div class = "toggle-space">
-                    <div class = "toggle active" id = "Tidal"></div>
+                    <div class = "toggle active" id = "Nuclear"></div>
                 </div>
             </div>
 
             <div class = "legend-entry active" style = "margin-bottom: 0;">
-                <div class = "symbol active" style="background-color: #12c474;" id="Wind_symbol"></div>
-                <div class = "symbol-label active">Wind</div>
+                <div class = "symbol active" style="background-color: #a8a8a8;" id="Other_symbol"></div>
+                <div class = "symbol-label active">Other</div>
                 <div class = "toggle-space">
-                    <div class = "toggle active" id = "Wind"></div>
+                    <div class = "toggle active" id = "Other"></div>
                 </div>
             </div>
 
@@ -244,8 +253,17 @@ body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, s
     </div>
 </div>
 
-<div class="chartpop">
-    
+
+<div class = "graph-popup">
+    <div class = "title-block" id="graph-popup-id">
+        <div class="graph-title">
+            <div class = "title" id = "graph-coutry-id"></div>
+            <button class="close-button" onclick="closeDiv()">x</button>
+        </div>
+        <div class = "leg-line"></div>
+        <div class="graph-type">Capacity by Fuel Type <span id="graph-unit-id">Megawatts</span></div>
+        <div id="chart-container"></div>
+    </div>
 </div>
 
 
@@ -271,6 +289,7 @@ body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, s
     
 </div>
 
+<script src="https://d3js.org/d3.v6.min.js"></script>
 <script src="script.js"></script>
  
 </body>

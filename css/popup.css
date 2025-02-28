@@ -5,11 +5,11 @@
 .mapboxgl-popup-content {
   font: var(--font_default);
   padding: 15px;
-  width: 260px;
+  width: 220px;
   background: var(--bg_color);
   color: var(--sec_color);
   display: inline-block;
-  border-radius: 3px;
+  border-radius: 15px;
 }
 
 .pop-title {

@@ -1,0 +1,59 @@
+.graph-popup{
+    position: absolute;
+    top: 50%;
+    right: 0px;
+    transform: translate(0%, -50%);
+    margin: 15px;
+    width: 440px;
+    overflow-y:scroll;
+    transition: 0.4s;
+}
+
+.graph-title {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    /* margin-top: -5px;
+    margin-left: -5px;
+    margin-right: -5px; */
+}
+
+
+.graph-container{
+    height: 360px;
+}
+
+.close-button {
+    opacity: 0.4;
+    padding: 0;
+    position: relative;
+    /* top: 10px;
+    right: 10px; */
+    background-color: rgba(0,0,0,0);
+    color: white;
+    border: none;
+    /* border-radius: 50%; */
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 14px;
+    /* line-height: 20px; */
+    color: var(--sec_color);
+    border: var(--ter_color) solid; 
+
+}
+
+.graph-type {
+    text-align: center;
+    color: var(--sec_color)
+}
+
+#graph-unit-id {
+    font-style: italic;
+    color: var(--ter_color);
+}
+
+#graph-popup-id{
+    display: none;
+}

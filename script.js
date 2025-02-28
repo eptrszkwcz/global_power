@@ -146,6 +146,7 @@ map.on('load', () => {
                     'Biomass', '#9e5418',
                     'Coal', '#fc0303',
                     'Gas', '#e01075',
+                    // 'Gas', '#e04410',
                     'Geothermal', '#8800ff',
                     'Hydro', '#0398fc',
                     'Nuclear', '#ff00f7',
@@ -159,6 +160,33 @@ map.on('load', () => {
             'circle-opacity': 0.5
             },
     });
+
+    // map.addLayer({
+    //     'id': 'A-PrimStyle',
+    //     'type': 'circle',
+    //     'source': 'source-A', 
+    //     'source-layer':sourceA_Layer,
+    //     'layout': {},
+    //     'paint': {
+    //         'circle-radius': radius_styling[0],
+    //         // 'circle-color': , 
+    //         'circle-color': [ 'match', ['get', 'primary_fuel'],
+    //             'Biomass', '#9e5418',
+    //             'Coal', '#fc0303',
+    //             'Gas', '#e01075',
+    //             // 'Gas', '#e04410',
+    //             'Geothermal', '#8800ff',
+    //             'Hydro', '#0398fc',
+    //             'Nuclear', '#ff00f7',
+    //             'Oil', '#eb7f7f',
+    //             'Solar', '#e3bb0e',
+    //             'Tidal', '#1859c9',
+    //             'Wind', '#12c474',
+    //             /* other */ '#000000'
+    //         ],
+    //         'circle-opacity': 0.5
+    //         },
+    // });
 
  
     //HIHGLIGHT ON HOVER, POINT ---------------------------------------------------------------
@@ -197,54 +225,15 @@ map.on('load', () => {
             ['boolean', ['feature-state', 'highl_click'], false], 1, 0]
         }
     }); 
-    
 
-    // POPUP ON CLICK ---------------------------------------------------------------
+     // POP-UP ON HOVER ---------------------------------------------------------------
+
     const popup = new mapboxgl.Popup({
         closeButton: false,
     });
 
-    // this function finds the center of a feature (to set popup) 
-    function getFeatureCenter(feature) {
-        let center = [];
-        let latitude = 0;
-        let longitude = 0;
-        let height = 0;
-        let coordinates = [];
-        feature.geometry.coordinates.forEach(function (c) {
-            let dupe = [];
-            if (feature.geometry.type === "MultiPolygon")
-                dupe.push(...c[0]); //deep clone to avoid modifying the original array
-            else 
-                dupe.push(...c); //deep clone to avoid modifying the original array
-            dupe.splice(-1, 1); //features in mapbox repeat the first coordinates at the end. We remove it.
-            coordinates = coordinates.concat(dupe);
-        });
-        if (feature.geometry.type === "Point") {
-            center = coordinates[0];
-        }
-        else {
-            coordinates.forEach(function (c) {
-                latitude += c[0];
-                longitude += c[1];
-            });
-            center = [latitude / coordinates.length, longitude / coordinates.length];
-        }
-
-        return center;
-    }
-
-    // this function adds a common to numbers  
-    function numberWithCommas(x) {
-        x = x.toString();
-        var pattern = /(-?\d+)(\d{3})/;
-        while (pattern.test(x))
-            x = x.replace(pattern, "$1,$2");
-        return x;
-    }
-
-    map.on('click', 'A-PrimStyle', (e) => {
-        new mapboxgl.Popup()
+    map.on('mouseenter', 'A-PrimStyle', (e) => {
+        // new mapboxgl.Popup()
         feature = e.features[0]
         // console.log(feature.geometry.coordinates[0])
 
@@ -274,14 +263,98 @@ map.on('load', () => {
                     <div class = "pop-unit">(GW)</div>
                     <div class = "pop-value">${pow_gen}</div>
                 </div>
-                <div class = "pop-entry">
-                    <div class = "pop-field">Capacity Factor</div>
-                    <div class = "pop-unit">%</div>
-                    <div class = "pop-value">${cap_fac}</div>
-                </div>
                   `)
         .addTo(map);
     });
+
+    map.on('mouseleave', 'A-PrimStyle', () => {
+        popup.remove();
+    });
+    
+
+    // // POPUP ON CLICK ---------------------------------------------------------------
+    // const popup = new mapboxgl.Popup({
+    //     closeButton: false,
+    // });
+
+    // // this function finds the center of a feature (to set popup) 
+    // function getFeatureCenter(feature) {
+    //     let center = [];
+    //     let latitude = 0;
+    //     let longitude = 0;
+    //     let height = 0;
+    //     let coordinates = [];
+    //     feature.geometry.coordinates.forEach(function (c) {
+    //         let dupe = [];
+    //         if (feature.geometry.type === "MultiPolygon")
+    //             dupe.push(...c[0]); //deep clone to avoid modifying the original array
+    //         else 
+    //             dupe.push(...c); //deep clone to avoid modifying the original array
+    //         dupe.splice(-1, 1); //features in mapbox repeat the first coordinates at the end. We remove it.
+    //         coordinates = coordinates.concat(dupe);
+    //     });
+    //     if (feature.geometry.type === "Point") {
+    //         center = coordinates[0];
+    //     }
+    //     else {
+    //         coordinates.forEach(function (c) {
+    //             latitude += c[0];
+    //             longitude += c[1];
+    //         });
+    //         center = [latitude / coordinates.length, longitude / coordinates.length];
+    //     }
+
+    //     return center;
+    // }
+
+    // this function adds a common to numbers  
+    function numberWithCommas(x) {
+        x = x.toString();
+        var pattern = /(-?\d+)(\d{3})/;
+        while (pattern.test(x))
+            x = x.replace(pattern, "$1,$2");
+        return x;
+    }
+
+    // map.on('click', 'A-PrimStyle', (e) => {
+    //     new mapboxgl.Popup()
+    //     feature = e.features[0]
+    //     // console.log(feature.geometry.coordinates[0])
+
+    //     // clean popup numbers 
+    //     let plant_cap = numberWithCommas(Math.round(feature.properties.capacity_mw))
+    //     let pow_gen = numberWithCommas(Math.round(feature.properties.estimated_generation_gwh_2017))
+    //     let cap_fac = Math.round(feature.properties.CapFac*100)
+
+    //     popup.setLngLat(feature.geometry.coordinates)
+    //     // popup.setLngLat(getFeatureCenter(feature))
+    //     // popup.setLngLat(e.lngLat)
+    //     .setHTML(`
+    //             <div class = "pop-title">${feature.properties.name}</div>
+    //             <div class = "pop-line"></div>
+
+    //             <div class = "pop-entry">
+    //                 <div class = "pop-field">Primary Fuel</div>
+    //                 <div class = "pop-value">${feature.properties.primary_fuel}</div>
+    //             </div>
+    //             <div class = "pop-entry">
+    //                 <div class = "pop-field">Plant Capacity</div>
+    //                 <div class = "pop-unit">(MW)</div>
+    //                 <div class = "pop-value">${plant_cap}</div>
+    //             </div>
+    //             <div class = "pop-entry">
+    //                 <div class = "pop-field">Power Generation</div>
+    //                 <div class = "pop-unit">(GW)</div>
+    //                 <div class = "pop-value">${pow_gen}</div>
+    //             </div>
+    //             <div class = "pop-entry">
+    //                 <div class = "pop-field">Capacity Factor</div>
+    //                 <div class = "pop-unit">%</div>
+    //                 <div class = "pop-value">${cap_fac}</div>
+    //             </div>
+    //               `)
+    //     .addTo(map);
+    // });
     
     // HIGHLIGHT ON CLICK BOOLEAN  (A) ---------------------------------------------------------------
     map.on('click', 'A-PrimStyle', (e) => {
@@ -312,6 +385,7 @@ map.on('load', () => {
                 counter += 1;
             }
         }
+
         if (counter == 0) {
             map.setFeatureState(
                     { source: 'source-A', sourceLayer: sourceA_Layer, id: clickedPointId },
@@ -325,14 +399,16 @@ map.on('load', () => {
         const filteredFeatures = map.querySourceFeatures('source-A', {
             sourceLayer: sourceA_Layer // Only needed for vector sources
         });
+        console.log(filteredFeatures.length)
         let countryName = e.features[0].properties.iso3
 
         if (e.features.length > 0) {
             if (clickedPolygonId !== null) {
                 map.setFeatureState(
                     { source: 'source-B', sourceLayer: sourceB_Layer, id: clickedPolygonId },
-                    { click_B: false, highl_click_B: false}
-                );
+                    { highl_click_B: false}
+                );  
+                
                 // Loop through and apply state to matching features
                 filteredFeatures.forEach(feature => {
                         map.setFeatureState(
@@ -387,6 +463,7 @@ map.on('load', () => {
                     { dim_noselect: false }
                 );
             });
+            document.getElementById("graph-popup-id").style.display = "none"
         }
     }); 
 
@@ -835,8 +912,117 @@ map.on('click', 'B-Countries-fill', (e) => {
 });
 
 
+function drawBarChart(fuelData, countryName) {
+    // Define the known fuel categories in the correct order
+    const fuelCategories = [
+        "Coal", "Gas", "Oil", "Biomass", "Geothermal", "Tidal",
+        "Hydro", "Wind", "Solar", "Nuclear", "Other"
+    ];
+
+    // Define a color mapping for each fuel type
+    const fuelColors = {
+        "Biomass": "#9e5418",
+        "Coal": "#fc0303",
+        "Gas": "#e01075",
+        "Geothermal": "#8800ff",
+        "Hydro": "#0398fc",
+        "Nuclear": "#ff00f7",
+        "Oil": "#eb7f7f",
+        "Solar": "#e3bb0e",
+        "Tidal": "#1859c9",
+        "Wind": "#12c474",
+        "Other": "#a8a8a8"
+    };
+
+    // Create a default object with all categories set to zero
+    const defaultFuelData = fuelCategories.reduce((acc, fuelType) => {
+        acc[fuelType] = { count: 0, totalCapacity: 0 };
+        return acc;
+    }, {});
+
+    // List of fuel types that should be grouped under "Other"
+    const knownFuelTypes = new Set(fuelCategories.slice(0, -1)); // Everything except "Other"
+
+    // Merge actual fuel data with default structure, grouping unknowns into "Other"
+    for (const [fuelType, values] of Object.entries(fuelData)) {
+        const category = knownFuelTypes.has(fuelType) ? fuelType : "Other";
+        defaultFuelData[category].count += values.count;
+        defaultFuelData[category].totalCapacity += values.totalCapacity;
+    }
+
+    // Convert mergedFuelData into an array, keeping the desired order
+    const data = fuelCategories.map(fuelType => ({
+        fuelType,
+        totalCapacity: Number(defaultFuelData[fuelType].totalCapacity) || 0
+    }));
+
+    if (data.length === 0) {
+        console.warn("No data available for", countryName);
+        return;
+    }
+
+    // Set up chart dimensions
+    const width = 320;
+    const height = 300;
+    const margin = { top: 20, right: 20, bottom: 30, left: 60 };
+
+    d3.select("#chart-container").select("svg").remove();
+
+    const svg = d3.select("#chart-container")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // X Scale (respects the predefined order)
+    const xScale = d3.scaleBand()
+        .domain(fuelCategories) // Use predefined fuel order
+        .range([0, width])
+        .padding(0.3);
+
+    const maxCapacity = d3.max(data, d => d.totalCapacity) || 1;
+    const yScale = d3.scaleLinear()
+        .domain([0, maxCapacity])
+        .nice()
+        .range([height, 0]); // Ensure 0 is at the bottom
+
+    // Draw bars (ensuring all categories are represented)
+    svg.selectAll(".bar")
+        .data(data)
+        .enter()
+        .append("rect")
+        .attr("class", "bar")
+        .attr("x", d => xScale(d.fuelType))
+        .attr("y", d => yScale(d.totalCapacity))
+        .attr("width", xScale.bandwidth())
+        .attr("height", d => height - yScale(d.totalCapacity))
+        .attr("fill", d => fuelColors[d.fuelType]); // Assign color based on fuel type
+
+    svg.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(xScale).tickSize(0))
+        // .tickSize(0)
+        .attr("color",  mystyle.getPropertyValue("--ter_color"))
+        .selectAll("text")
+        .attr("transform", "rotate(-40)")
+        .style("text-anchor", "end");
+    
+    svg.append("g").call(d3.axisLeft(yScale))
+    
+    // svg.append("g")
+    //     .call(d3.axisBottom(xScale).tickSize(0))
+
+    const textElements = svg.selectAll("text");
+    const pathAndLineElements = svg.selectAll("path, line");
+
+    textElements.style("fill", mystyle.getPropertyValue("--sec_color"));   // Change text color
+    pathAndLineElements.style("stroke", mystyle.getPropertyValue("--ter_color"));  // Change line/path color
+
+}
+
 map.on('click', 'B-Countries-fill', (e) => {
-    // console.log(e.features[0].properties.iso3)
+    // console.log(e.features[0].properties)
     let countryName = e.features[0].properties.iso3
     const powerplantFeatures = map.queryRenderedFeatures({ layers: ['A-PrimStyle'] });
     const filteredPowerplants = powerplantFeatures.filter(feature => feature.properties.country === countryName);
@@ -846,15 +1032,48 @@ map.on('click', 'B-Countries-fill', (e) => {
         const capacity = parseInt(feature.properties.capacity_mw) || 0; // Ensure it's a number
 
         if (!acc[fuelType]) {
-            acc[fuelType] = { count: 0, totalCap: 0 };
+            acc[fuelType] = { count: 0, totalCapacity: 0 };
         }
 
         acc[fuelType].count += 1; // Increment count
-        acc[fuelType].totalCap += capacity; // Sum capacity
+        acc[fuelType].totalCapacity += capacity; // Sum capacity
 
         return acc;
     }, {});
 
     // Log the results
-    // console.log(`Fuel type breakdown in ${countryName}:`, fuelData);
+    console.log(`Fuel type breakdown in ${countryName}:`, fuelData);
+
+    document.getElementById("graph-popup-id").style.display = "block"
+    document.getElementById("graph-coutry-id").innerHTML = `${e.features[0].properties.name}`;
+    drawBarChart(fuelData, countryName);
+});
+
+
+
+function closeDiv() {
+    document.getElementById("graph-popup-id").style.display = "none"
+
+    const filteredFeatures = map.querySourceFeatures('source-A', {
+        sourceLayer: sourceA_Layer // Only needed for vector sources
+    });
+
+    filteredFeatures.forEach(feature => {
+        map.setFeatureState(
+            { source: 'source-A', sourceLayer: sourceA_Layer, id: feature.id },
+            { dim_noselect: false }
+        );
+    });
+
+    map.setFeatureState(
+        { source: 'source-B', sourceLayer: sourceB_Layer, id: clickedPolygonId },
+        { click_B: false, highl_click_B: false}
+    );
+};
+
+
+map.on('click', (event) => {
+    const coordinates = event.lngLat; // Get the clicked coordinates
+    console.log(`Latitude: ${coordinates.lat}, Longitude: ${coordinates.lng}`);
+
 });
