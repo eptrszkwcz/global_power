@@ -46,7 +46,8 @@
 
 .graph-type {
     text-align: center;
-    color: var(--sec_color)
+    color: var(--sec_color);
+    font-size: 14px;
 }
 
 #graph-unit-id {
@@ -56,4 +57,5 @@
 
 #graph-popup-id{
     display: none;
+    height: 468.5px;
 }

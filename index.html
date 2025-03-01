@@ -8,6 +8,10 @@
 
 <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
 <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+<script src="https://d3js.org/d3.v6.min.js"></script>
+<!-- <script type="module" src="main.js"></script> -->
+<script type="module" src="script.js"></script>
+ 
 
 <!-- <link href="css/legend.css" rel="stylesheet" type="text/css">   -->
 <link href="css/popup.css" rel="stylesheet" type="text/css">  
@@ -257,11 +261,11 @@ body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, s
 <div class = "graph-popup">
     <div class = "title-block" id="graph-popup-id">
         <div class="graph-title">
-            <div class = "title" id = "graph-coutry-id"></div>
-            <button class="close-button" onclick="closeDiv()">x</button>
+            <div class = "title" id = "graph-coutry-id">WTF</div>
+            <button class="close-button" id="graphpopup-close-id">x</button>
         </div>
         <div class = "leg-line"></div>
-        <div class="graph-type">Capacity by Fuel Type <span id="graph-unit-id">Megawatts</span></div>
+        <!-- <div class="graph-type">Capacity by Fuel Type <span id="graph-unit-id">Megawatts</span></div> -->
         <div id="chart-container"></div>
     </div>
 </div>
@@ -289,8 +293,6 @@ body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, s
     
 </div>
 
-<script src="https://d3js.org/d3.v6.min.js"></script>
-<script src="script.js"></script>
- 
+
 </body>
 </html> 
