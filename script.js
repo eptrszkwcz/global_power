@@ -2,7 +2,8 @@
 var cssclass = document.querySelector(":root");
 var mystyle = window.getComputedStyle(cssclass);
 
-import { drawBarChart } from './bar_graph.js';
+// import * as d3 from "d3";
+import { process_fuel, process_renew, drawBarChart, drawRenewChart, drawContinentEnergyChart } from './bar_graph.js';
 import { zoom_to_bounds, getZoomLevel, numberWithCommas} from './utilities.js';
 
 const filterGroup = document.getElementById('filter-group');
@@ -27,6 +28,7 @@ let hoveredPolygonId = null;
 let clickedPointId = null;
 let clickedPolygonId = null;
 let countryName = null;
+let viz_type = 2;
 
 
 const cats = ['Biomass','Coal','Gas','Geothermal','Hydro','Nuclear','Oil','Solar','Tidal','Wind'];
@@ -42,13 +44,15 @@ const sourceA_Layer = "Global_Power_Plants-d5dhk4"
 const sourceB_Layer = "All_Countries_zoomReady-6azvlf"
 
 
-
 const radius_styling = [
     // CORRECT ZOOM SYNTAX
     [ 'interpolate', ['linear'], ['zoom'],
-        2, [ 'interpolate', ['linear'], ['get', 'capacity_mw'], 0, 0.155, 5000,2.5], 
-        4, [ 'interpolate', ['linear'], ['get', 'capacity_mw'], 0, 1.55, 5000,25],
-        6, [ 'interpolate', ['linear'], ['get', 'capacity_mw'], 0, 3.1, 5000,50]],
+        // 2, [ 'interpolate', ['linear'], ['get', 'capacity_mw'], 0, 0.155, 5000,2.5], 
+        // 4, [ 'interpolate', ['linear'], ['get', 'capacity_mw'], 0, 1.55, 5000,25],
+        // 6, [ 'interpolate', ['linear'], ['get', 'capacity_mw'], 0, 3.1, 5000,50]],
+        2, [ 'interpolate', ['linear'], ['get', 'capacity_mw'], 0, 0.155, 14000,2.5], 
+        4, [ 'interpolate', ['linear'], ['get', 'capacity_mw'], 0, 1.55, 14000,55],
+        6, [ 'interpolate', ['linear'], ['get', 'capacity_mw'], 0, 3.1, 14000,100]],
     [ 'interpolate', ['linear'], ['zoom'],
         2, [ 'interpolate', ['linear'], ['get', 'estimated_generation_gwh_2017'], 0, 0.155, 33000,2.5], 
         4, [ 'interpolate', ['linear'], ['get', 'estimated_generation_gwh_2017'], 0, 1.55, 33000,25],
@@ -58,6 +62,47 @@ const radius_styling = [
         4, [ 'interpolate', ['linear'], ['get', ('estimated_generation_gwh_2017'/'capacity_mw')], 0.5, 1.55, 1,25],
         6, [ 'interpolate', ['linear'], ['get', ('estimated_generation_gwh_2017'/'capacity_mw')], 0.5, 3.1, 1,50]],
 ]
+
+const circle_viz = [
+    [ 'match', ['get', 'primary_fuel'],
+        'Biomass', '#9e5418',
+        'Coal', '#fc0303',
+        'Gas', '#e01075',
+        // 'Gas', '#e04410',
+        'Geothermal', '#8800ff',
+        'Hydro', '#0398fc',
+        'Nuclear', '#ff00f7',
+        'Oil', '#eb7f7f',
+        'Solar', '#e3bb0e',
+        'Tidal', '#1859c9',
+        'Wind', '#12c474',
+        /* other */ '#000000'
+            ],
+    ['case',
+        ['has', 'commissioning_year'], 
+        ['interpolate', ['linear'], ['get', 'commissioning_year'],
+            1960, '#6200a3',
+            2000, '#3b50c4',
+            2020, '#2efc1c'
+        ],
+        "rgba(160,160,160,0.2)" //For no values
+    ],
+    [ 'match', ['get', 'primary_fuel'],
+        'Biomass', '#00de8d',
+        'Coal', '#ff005d',
+        'Gas', '#ff005d',
+        // 'Gas', '#e04410',
+        'Geothermal', '#00de8d',
+        'Hydro', '#00de8d',
+        'Nuclear', '#b31e5c',
+        'Oil', '#ff005d',
+        'Solar', '#00de8d',
+        'Tidal', '#00de8d',
+        'Wind', '#00de8d',
+        /* other */ '#000000'
+    ]
+]
+
 
 map.on('load', () => {
 
@@ -78,7 +123,8 @@ map.on('load', () => {
         'layout': {},
         'paint': {
             // 'fill-color': '#12c474', 
-            'fill-color': '#FFFFFF',
+            // 'fill-color': '#FFFFFF',
+            'fill-color': '#000000',
             'fill-opacity': [ 'case', 
             ['boolean', ['feature-state', 'hoverB'], false], 0.05, 0],
             },
@@ -92,9 +138,10 @@ map.on('load', () => {
         'layout': {},
         'paint': {
             // 'fill-color': '#12c474', 
-            'fill-color': '#FFFFFF',
+            // 'fill-color': '#FFFFFF',
+            'fill-color': '#000000',
             'fill-opacity': [ 'case', 
-            ['boolean', ['feature-state', 'highl_click_B'], false], 0.05, 0],
+            ['boolean', ['feature-state', 'highl_click_B'], false], 0.1, 0],
             },
     });
 
@@ -105,10 +152,10 @@ map.on('load', () => {
         'source-layer': sourceB_Layer,
         'layout': {},
         'paint': {
-            'line-width': 0.2,
+            'line-width': 0.4,
             'line-color': '#FFFFFF', 
             'line-opacity': [ 'case', 
-            ['boolean', ['feature-state', 'highl_click_B'], false], 0.8, 0],
+            ['boolean', ['feature-state', 'highl_click_B'], false], 0.9, 0],
             },
     });
 
@@ -128,23 +175,61 @@ map.on('load', () => {
         'paint': {
             'circle-radius': radius_styling[0],
             // 'circle-color': , 
-            'circle-color': [ 'match', ['get', 'primary_fuel'],
-                'Biomass', '#9e5418',
-                'Coal', '#fc0303',
-                'Gas', '#e01075',
-                // 'Gas', '#e04410',
-                'Geothermal', '#8800ff',
-                'Hydro', '#0398fc',
-                'Nuclear', '#ff00f7',
-                'Oil', '#eb7f7f',
-                'Solar', '#e3bb0e',
-                'Tidal', '#1859c9',
-                'Wind', '#12c474',
-                /* other */ '#000000'
-            ],
+            'circle-color': circle_viz[2],
             'circle-opacity': 0.5
             },
     });
+
+    // map.addLayer({
+    //     'id': 'A-PrimStyle',
+    //     'type': 'circle',
+    //     'source': 'source-A', 
+    //     'source-layer':sourceA_Layer,
+    //     'layout': {},
+    //     'paint': {
+    //         'circle-radius': radius_styling[0],
+    //         // 'circle-color': , 
+    //         'circle-color': [ 'match', ['get', 'primary_fuel'],
+    //             'Biomass', '#00de8d',
+    //             'Coal', '#ff005d',
+    //             'Gas', '#ff005d',
+    //             // 'Gas', '#e04410',
+    //             'Geothermal', '#00de8d',
+    //             'Hydro', '#00de8d',
+    //             'Nuclear', '#b31456',
+    //             'Oil', '#ff005d',
+    //             'Solar', '#00de8d',
+    //             'Tidal', '#00de8d',
+    //             'Wind', '#00de8d',
+    //             /* other */ '#000000'
+    //         ],
+    //         'circle-opacity': 0.5
+    //         },
+    // });
+
+    // COMMISSIONING YEAR
+    // map.addLayer({
+    //     'id': 'A-PrimStyle',
+    //     'type': 'circle',
+    //     'source': 'source-A', 
+    //     'source-layer':sourceA_Layer,
+    //     'layout': {},
+    //     'paint': {
+    //         'circle-radius': radius_styling[0],
+    //         // 'circle-color': , 
+    //         'circle-color': [
+    //             'case',
+    //             ['has', 'commissioning_year'], 
+    //             ['interpolate', ['linear'], ['get', 'commissioning_year'],
+    //                 1960, '#6200a3',
+    //                 2000, '#3b50c4',
+    //                 2020, '#2efc1c'
+    //             ],
+    //             "rgba(160,160,160,0.2)" //For no values
+    //         ],
+    //         'circle-opacity': 0.5
+    //         },
+    // });
 
  
     //HIHGLIGHT ON HOVER, POINT ---------------------------------------------------------------
@@ -165,23 +250,23 @@ map.on('load', () => {
         }
     }); 
 
-    //HIHGLIGHT ON CLICK, POIMT ---------------------------------------------------------------
-    map.addLayer({
-        'id': 'A-Click-point',
-        'type': 'circle',
-        'source': 'source-A', // reference the data source
-        'source-layer':sourceA_Layer,
-        'layout': {},
-        'paint': {
-            'circle-color': "rgba(0,0,0,0)",
-            'circle-stroke-color': mystyle.getPropertyValue("--highl_color"),
-            'circle-stroke-width': [ 'case', 
-                ['boolean', ['feature-state', 'highl_click'], false], 2, 0],
-            'circle-radius': radius_styling[0],
-            'circle-opacity': [ 'case', 
-            ['boolean', ['feature-state', 'highl_click'], false], 1, 0]
-        }
-    }); 
+    // //HIHGLIGHT ON CLICK, POIMT ---------------------------------------------------------------
+    // map.addLayer({
+    //     'id': 'A-Click-point',
+    //     'type': 'circle',
+    //     'source': 'source-A', // reference the data source
+    //     'source-layer':sourceA_Layer,
+    //     'layout': {},
+    //     'paint': {
+    //         'circle-color': "rgba(0,0,0,0)",
+    //         'circle-stroke-color': mystyle.getPropertyValue("--highl_color"),
+    //         'circle-stroke-width': [ 'case', 
+    //             ['boolean', ['feature-state', 'highl_click'], false], 2, 0],
+    //         'circle-radius': radius_styling[0],
+    //         'circle-opacity': [ 'case', 
+    //         ['boolean', ['feature-state', 'highl_click'], false], 1, 0]
+    //     }
+    // }); 
 
 
     // CLICK ON COUNTRY (B) ---------------------------------------------------------------
@@ -217,26 +302,27 @@ map.on('load', () => {
             map.once('idle', () => {
                 let fFeatures = map.queryRenderedFeatures({ layers: ['A-PrimStyle']});
 
-                let fuelData = fFeatures.reduce((acc, feature) => {
-                    let fuelType = feature.properties.primary_fuel;
-                    let capacity = parseInt(feature.properties.capacity_mw) || 0; // Ensure it's a number
-            
-                    if (!acc[fuelType]) {
-                        acc[fuelType] = { count: 0, totalCapacity: 0 };
-                    }
-            
-                    acc[fuelType].count += 1; // Increment count
-                    acc[fuelType].totalCapacity += capacity; // Sum capacity
-            
-                    return acc;
-                }, {});
-
-                drawBarChart(fuelData, countryName);
-
+                if (viz_type === 0){
+                    let fuelData = process_fuel(fFeatures)
+                    drawBarChart(fuelData, countryName);
+                } if (viz_type === 2){
+                    let renewData = process_renew(fFeatures)
+                    console.log(renewData)
+                    console.log(renewData.totalRenewable)
+                    // drawRenewChart(renewData)
+                    drawContinentEnergyChart([
+                        { continent: "Asia", Renewable: 22.04, Nuclear: 4.27, Nonrenewable: 73.69 },
+                        { continent: "Europe", Renewable: 30.80, Nuclear: 15.91, Nonrenewable: 53.29 },
+                        { continent: "Africa", Renewable: 25.47, Nuclear: 1.12, Nonrenewable: 73.41 },
+                        { continent: "South America", Renewable: 70.08, Nuclear: 1.39, Nonrenewable: 28.53 },
+                        { continent: "Oceania", Renewable: 34.16, Nuclear: 0.00, Nonrenewable: 65.84 },
+                        { continent: "North America", Renewable: 26.54, Nuclear: 8.49, Nonrenewable: 64.98 }
+                    ],
+                    // { continent: "Custom Country", Renewable: renewData.totalRenewable , Nuclear: renewData.totalNuclear , Nonrenewable: renewData.totalNonRenewable });
+                    { continent: "Custom Country", Renewable: 25 , Nuclear: 25 , Nonrenewable: 50 });
+                }
             });  
-
         };
-
         return countryName
     });
     
@@ -297,6 +383,13 @@ map.on('load', () => {
             // ADD POP UP
             let plant_cap = numberWithCommas(Math.round(feature.properties.capacity_mw))
             let pow_gen = numberWithCommas(Math.round(feature.properties.estimated_generation_gwh_2017))
+            let year_com = feature.properties.commissioning_year
+
+            if (typeof year_com === 'undefined') {
+                year_com = "-";
+            } else{
+                year_com = parseInt(year_com)
+            }
 
             popup.setLngLat(feature.geometry.coordinates)
             .setHTML(`
@@ -313,9 +406,8 @@ map.on('load', () => {
                         <div class = "pop-value">${plant_cap}</div>
                     </div>
                     <div class = "pop-entry">
-                        <div class = "pop-field">Power Generation</div>
-                        <div class = "pop-unit">(GW)</div>
-                        <div class = "pop-value">${pow_gen}</div>
+                        <div class = "pop-field">Commissioning Year</div>
+                        <div class = "pop-value">${year_com}</div>
                     </div>
                     `)
             .addTo(map);
@@ -370,7 +462,7 @@ map.on('load', () => {
 
 
 
-    // CLICK TO FILTER (INTEGRATED INTO LEGEND) ---------------------------------------------------------------
+    // CLICK TO FILTER (INTEGRATED INTO LEGEND) -o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-
 
     for (let i = 0; i < cats.length; i++) {
 
@@ -404,30 +496,28 @@ map.on('load', () => {
                 document.getElementById(ID_symbol).classList.remove("active");
             }
 
-            // composite_filter(country_mode, filter_cats, countryName)
-
             async function runFunctions() {
-                await composite_filter(country_mode = true, filter_cats, countryName);  // Ensures this finishes first
-                const fFeatures = map.queryRenderedFeatures({
-                    layers: ['A-PrimStyle'] // Replace with your actual layer ID
-                });
-    
-                fuelData = fFeatures.reduce((acc, feature) => {
-                    let fuelType = feature.properties.primary_fuel;
-                    let capacity = parseInt(feature.properties.capacity_mw) || 0; // Ensure it's a number
+                await composite_filter(country_mode, filter_cats, countryName); // Ensures this finishes first
             
-                    if (!acc[fuelType]) {
-                        acc[fuelType] = { count: 0, totalCapacity: 0 };
+                // Wait for the map to be fully loaded before querying features
+                await new Promise(resolve => {
+                    if (map.isStyleLoaded()) {
+                        resolve();
+                    } else {
+                        map.once('idle', resolve);
                     }
+                });
             
-                    acc[fuelType].count += 1; // Increment count
-                    acc[fuelType].totalCapacity += capacity; // Sum capacity
+                const fFeatures = map.queryRenderedFeatures({
+                    layers: ['A-PrimStyle'] 
+                });
             
-                    return acc;
-                }, {});
-                console.log("before", fuelData)
-    
-                drawBarChart(fuelData, countryName);       // Runs after firstFunction completes
+                let fuelData = process_fuel(fFeatures);
+                console.log(fuelData);
+            
+                if (country_mode) {
+                    drawBarChart(fuelData, countryName); 
+                }
             }
             
             runFunctions();
@@ -437,59 +527,59 @@ map.on('load', () => {
 
     // CLICK TO CHANGE ANALYSIS ---------------------------------------------------------------
 
-    const dropDownButton = document.querySelector('#dropdown-butt');
+    // const dropDownButton = document.querySelector('#dropdown-butt');
 
-    for (let i = 0; i < anals.length; i++) {
+    // for (let i = 0; i < anals.length; i++) {
 
-        const hash = "#"
-        const ID_name = hash.concat(anals[i])
+    //     const hash = "#"
+    //     const ID_name = hash.concat(anals[i])
 
-        const sessionDiv = document.querySelector(ID_name);
+    //     const sessionDiv = document.querySelector(ID_name);
 
-        sessionDiv.onclick = function (e) {
-            // const clickedLayer = this.textContent;
-            const clickedLayer = sessionDiv.id
+    //     sessionDiv.onclick = function (e) {
+    //         // const clickedLayer = this.textContent;
+    //         const clickedLayer = sessionDiv.id
 
-            e.preventDefault();
-            e.stopPropagation();
+    //         e.preventDefault();
+    //         e.stopPropagation();
 
-            for (let i = 0; i < anals.length; i++){
-                const hash = "#"
-                const ID_name = hash.concat(anals[i])
+    //         for (let i = 0; i < anals.length; i++){
+    //             const hash = "#"
+    //             const ID_name = hash.concat(anals[i])
 
-                if (anals[i] != clickedLayer){
-                    // console.log(i)
-                    // map.setLayoutProperty(anals[i], 'visibility', 'none');
+    //             if (anals[i] != clickedLayer){
+    //                 // console.log(i)
+    //                 // map.setLayoutProperty(anals[i], 'visibility', 'none');
 
-                    let noclickDiv = document.querySelector(ID_name);
-                    const noclickclass = noclickDiv.classList;
-                    noclickclass.remove("checked")
+    //                 let noclickDiv = document.querySelector(ID_name);
+    //                 const noclickclass = noclickDiv.classList;
+    //                 noclickclass.remove("checked")
 
-                    document.getElementById("entry-".concat(i)).classList.remove("active");
+    //                 document.getElementById("entry-".concat(i)).classList.remove("active");
 
-                }
-                else {
-                    // map.setLayoutProperty(anals[i], 'visibility', 'visible');
-                    // 'A-PrimStyle' = anals[i]
+    //             }
+    //             else {
+    //                 // map.setLayoutProperty(anals[i], 'visibility', 'visible');
+    //                 // 'A-PrimStyle' = anals[i]
                     
-                    // console.log(dropDownButton.textContent)
-                    dropDownButton.textContent = e.target.text
-                    map.setPaintProperty('A-PrimStyle', 'circle-radius', radius_styling[i]);
-                    map.setPaintProperty('A-Hover-point', 'circle-radius', radius_styling[i]);
-                    map.setPaintProperty('A-Click-point', 'circle-radius', radius_styling[i]);
+    //                 // console.log(dropDownButton.textContent)
+    //                 dropDownButton.textContent = e.target.text
+    //                 map.setPaintProperty('A-PrimStyle', 'circle-radius', radius_styling[i]);
+    //                 map.setPaintProperty('A-Hover-point', 'circle-radius', radius_styling[i]);
+    //                 map.setPaintProperty('A-Click-point', 'circle-radius', radius_styling[i]);
 
-                    document.getElementById("entry-".concat(i)).classList.add("active");
-                    // document.getElementById("entry-".concat(2)).classList.toggle("active");
-                    // document.getElementById("entry-".concat(intlist[i+1])).classList.remove("active");
+    //                 document.getElementById("entry-".concat(i)).classList.add("active");
+    //                 // document.getElementById("entry-".concat(2)).classList.toggle("active");
+    //                 // document.getElementById("entry-".concat(intlist[i+1])).classList.remove("active");
                 
-                    const clickclass = sessionDiv.classList;
-                    let clickDiv = document.querySelector(ID_name);
-                    const noclickclass = clickDiv.classList;
-                    clickclass.add("checked")
-                }
-            }
-        }
-    }
+    //                 const clickclass = sessionDiv.classList;
+    //                 let clickDiv = document.querySelector(ID_name);
+    //                 const noclickclass = clickDiv.classList;
+    //                 clickclass.add("checked")
+    //             }
+    //         }
+    //     }
+    // }
 
     
     
@@ -588,7 +678,6 @@ function closeDiv(filter_cats, countryName) {
     );
 };
 
-
 // SET FOG ---------------------------------------------------------------
 map.on('style.load', () => {
     map.setFog({
@@ -599,6 +688,26 @@ map.on('style.load', () => {
         "space-color": "#000000",
         "star-intensity": 0.2
     }); // Set the default atmosphere style
+});
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    const buttons = document.querySelectorAll(".viz-but");
+
+    buttons.forEach((button, index) => {
+        button.addEventListener("click", function () {
+            // Remove "active" class from all buttons
+            buttons.forEach(btn => btn.classList.remove("active"));
+
+            // Add "active" class to the clicked button
+            this.classList.add("active");
+
+            // Log the index of the clicked button (0, 1, or 2)
+            console.log(index);
+            map.setPaintProperty('A-PrimStyle', 'circle-color', circle_viz[index]);
+            viz_type = index
+        });
+    });
 });
 
 

@@ -1,0 +1,41 @@
+.button-container {
+    position: fixed;
+    top: 0;
+    right: 0;
+    margin: 15px;
+    width: 440px;
+    height: 120px; 
+    overflow-y: scroll;
+    transition: 0.4s;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+    padding: 2px;
+}
+
+.viz-but {
+    height: calc(100% - 4px); /* Reduce height to fit the border */
+    flex: 1;
+    background-color: var(--bg_color);
+    padding: 20px;
+    border-radius: 3px;
+    color: var(--ter_color);
+    display: flex;
+    align-items: center; /* Center vertically */
+    justify-content: center; /* Center horizontally */
+    text-align: center;
+    padding: 10px;
+    box-sizing: border-box; /* Ensures border is included in the total size */
+}
+
+.viz-but:hover {
+    background-color: var( --bghov_color);
+    color: var( --prim_color);
+}
+
+.viz-but.active {
+    background-color: var( --bghov_color);
+    color: var( --prim_color);
+    outline: 1px solid var( --prim_color);;
+}

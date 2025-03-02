@@ -58,4 +58,7 @@
 #graph-popup-id{
     display: none;
     height: 468.5px;
+    border-radius: 12px;
+    /* border: solid var(--ter_color);
+    border-width: 1px; */
 }

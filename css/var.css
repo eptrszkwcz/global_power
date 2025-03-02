@@ -1,7 +1,8 @@
 :root {
     /* --bg_color: rgba(72, 72, 72, 0.9); */
     --bg_color: rgba(57, 57, 57, 0.9);
-    --bghov_color: rgba(100, 100, 100, 0.9);
+    /* --bghov_color: rgba(100, 100, 100, 0.9); */
+    --bghov_color: rgba(87, 87, 87, 0.9);
 
     --prim_color: rgba(235, 235, 235, 1);
     --sec_color: rgba(174, 174, 174, 1); 
