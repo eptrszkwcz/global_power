@@ -3,7 +3,7 @@ var cssclass = document.querySelector(":root");
 var mystyle = window.getComputedStyle(cssclass);
 
 // import * as d3 from "d3";
-import { process_fuel, process_renew, drawBarChart, drawRenewChart, drawContinentEnergyChart } from './bar_graph.js';
+import { process_fuel, process_renew, drawBarChart, drawContinentEnergyChart, drawBoxPlot} from './bar_graph.js';
 import { zoom_to_bounds, getZoomLevel, numberWithCommas} from './utilities.js';
 
 const filterGroup = document.getElementById('filter-group');
@@ -28,7 +28,7 @@ let hoveredPolygonId = null;
 let clickedPointId = null;
 let clickedPolygonId = null;
 let countryName = null;
-let viz_type = 2;
+let viz_type = 1;
 
 
 const cats = ['Biomass','Coal','Gas','Geothermal','Hydro','Nuclear','Oil','Solar','Tidal','Wind'];
@@ -126,7 +126,7 @@ map.on('load', () => {
             // 'fill-color': '#FFFFFF',
             'fill-color': '#000000',
             'fill-opacity': [ 'case', 
-            ['boolean', ['feature-state', 'hoverB'], false], 0.05, 0],
+            ['boolean', ['feature-state', 'hoverB'], false], 0.1, 0],
             },
     });
 
@@ -175,7 +175,7 @@ map.on('load', () => {
         'paint': {
             'circle-radius': radius_styling[0],
             // 'circle-color': , 
-            'circle-color': circle_viz[2],
+            'circle-color': circle_viz[viz_type],
             'circle-opacity': 0.5
             },
     });
@@ -272,6 +272,7 @@ map.on('load', () => {
     // CLICK ON COUNTRY (B) ---------------------------------------------------------------
     map.on('click', 'B-Countries-fill', (e) => {
         countryName = e.features[0].properties.iso3
+        let fullName = e.features[0].properties.name
 
         if (e.features.length > 0) {
             if (clickedPolygonId !== null) {
@@ -305,21 +306,11 @@ map.on('load', () => {
                 if (viz_type === 0){
                     let fuelData = process_fuel(fFeatures)
                     drawBarChart(fuelData, countryName);
+                } if (viz_type === 1){
+                    drawBoxPlot(fFeatures)
                 } if (viz_type === 2){
                     let renewData = process_renew(fFeatures)
-                    console.log(renewData)
-                    console.log(renewData.totalRenewable)
-                    // drawRenewChart(renewData)
-                    drawContinentEnergyChart([
-                        { continent: "Asia", Renewable: 22.04, Nuclear: 4.27, Nonrenewable: 73.69 },
-                        { continent: "Europe", Renewable: 30.80, Nuclear: 15.91, Nonrenewable: 53.29 },
-                        { continent: "Africa", Renewable: 25.47, Nuclear: 1.12, Nonrenewable: 73.41 },
-                        { continent: "South America", Renewable: 70.08, Nuclear: 1.39, Nonrenewable: 28.53 },
-                        { continent: "Oceania", Renewable: 34.16, Nuclear: 0.00, Nonrenewable: 65.84 },
-                        { continent: "North America", Renewable: 26.54, Nuclear: 8.49, Nonrenewable: 64.98 }
-                    ],
-                    // { continent: "Custom Country", Renewable: renewData.totalRenewable , Nuclear: renewData.totalNuclear , Nonrenewable: renewData.totalNonRenewable });
-                    { continent: "Custom Country", Renewable: 25 , Nuclear: 25 , Nonrenewable: 50 });
+                    drawContinentEnergyChart({ continent: "Custom Country", Renewable: renewData.percRenewable , Nuclear: renewData.percNuclear , Nonrenewable: renewData.percNonRenewable});
                 }
             });  
         };

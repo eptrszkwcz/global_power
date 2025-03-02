@@ -62,3 +62,7 @@
     /* border: solid var(--ter_color);
     border-width: 1px; */
 }
+
+.continent-label {
+    color: var(--ter_color);
+}
