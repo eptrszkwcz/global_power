@@ -50,14 +50,15 @@
     font-size: 14px;
 }
 
-#graph-unit-id {
+.graph-unit-id {
     font-style: italic;
     color: var(--ter_color);
 }
 
 #graph-popup-id{
     display: none;
-    height: 468.5px;
+    /* height: 468.5px; */
+    height: 600px;
     border-radius: 12px;
     /* border: solid var(--ter_color);
     border-width: 1px; */

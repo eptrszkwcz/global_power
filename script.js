@@ -3,8 +3,9 @@ var cssclass = document.querySelector(":root");
 var mystyle = window.getComputedStyle(cssclass);
 
 // import * as d3 from "d3";
-import { process_fuel, process_renew, drawBarChart, drawContinentEnergyChart, drawBoxPlot} from './bar_graph.js';
+import { process_FuelType, process_Renewable, chart_Renewable, chart_YearBuilt, chart_FuelType, chart_CapPerPop} from './bar_graph.js';
 import { zoom_to_bounds, getZoomLevel, numberWithCommas} from './utilities.js';
+import { getCountryPopulation } from './populationAPI.js';
 
 const filterGroup = document.getElementById('filter-group');
 
@@ -28,7 +29,7 @@ let hoveredPolygonId = null;
 let clickedPointId = null;
 let clickedPolygonId = null;
 let countryName = null;
-let viz_type = 1;
+let viz_type = 0;
 
 
 const cats = ['Biomass','Coal','Gas','Geothermal','Hydro','Nuclear','Oil','Solar','Tidal','Wind'];
@@ -81,7 +82,8 @@ const circle_viz = [
     ['case',
         ['has', 'commissioning_year'], 
         ['interpolate', ['linear'], ['get', 'commissioning_year'],
-            1960, '#6200a3',
+            1950, "#fa00f6",
+            1970, '#6200a3',
             2000, '#3b50c4',
             2020, '#2efc1c'
         ],
@@ -294,7 +296,7 @@ map.on('load', () => {
             // country_mode = true; 
             composite_filter(country_mode = true, filter_cats, countryName)
 
-            d3.select("#chart-container").select("svg").remove(); //removes the previous chart
+            d3.select("#chart-container").selectAll("svg").remove(); //removes the previous chart
             d3.select("#chart-container").selectAll("div").remove(); //removes chart title
 
             document.getElementById("graph-popup-id").style.display = "block";
@@ -302,16 +304,9 @@ map.on('load', () => {
 
             map.once('idle', () => {
                 let fFeatures = map.queryRenderedFeatures({ layers: ['A-PrimStyle']});
+                let isocode = fFeatures[0].properties.country
 
-                if (viz_type === 0){
-                    let fuelData = process_fuel(fFeatures)
-                    drawBarChart(fuelData, countryName);
-                } if (viz_type === 1){
-                    drawBoxPlot(fFeatures)
-                } if (viz_type === 2){
-                    let renewData = process_renew(fFeatures)
-                    drawContinentEnergyChart({ continent: "Custom Country", Renewable: renewData.percRenewable , Nuclear: renewData.percNuclear , Nonrenewable: renewData.percNonRenewable});
-                }
+                displayChart(viz_type, fFeatures, isocode)
             });  
         };
         return countryName
@@ -503,7 +498,7 @@ map.on('load', () => {
                     layers: ['A-PrimStyle'] 
                 });
             
-                let fuelData = process_fuel(fFeatures);
+                let fuelData = process_FuelType(fFeatures);
                 console.log(fuelData);
             
                 if (country_mode) {
@@ -694,11 +689,32 @@ document.addEventListener("DOMContentLoaded", function () {
             this.classList.add("active");
 
             // Log the index of the clicked button (0, 1, or 2)
-            console.log(index);
+            // console.log(index);
             map.setPaintProperty('A-PrimStyle', 'circle-color', circle_viz[index]);
             viz_type = index
+            map.once('idle', () => {
+                let fFeatures = map.queryRenderedFeatures({ layers: ['A-PrimStyle']});
+                let isocode = fFeatures[0].properties.country
+
+                displayChart(viz_type, fFeatures, isocode)
+            });  
         });
     });
 });
+
+function displayChart(viz_type, fFeatures, isocode){
+    if (viz_type === 0){
+        let fuelData = process_FuelType(fFeatures)
+        console.log(fuelData)
+        chart_FuelType(fuelData)
+        chart_CapPerPop("", fuelData, isocode);
+        // drawBarChart(fuelData, countryName);
+    } if (viz_type === 1){
+        chart_YearBuilt(fFeatures)
+    } if (viz_type === 2){
+        let renewData = process_Renewable(fFeatures)
+        chart_Renewable({ continent: "Custom Country", Renewable: renewData.percRenewable , Nuclear: renewData.percNuclear , Nonrenewable: renewData.percNonRenewable});
+    }
+}
 
 
