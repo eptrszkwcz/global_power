@@ -2,6 +2,11 @@
 var cssclass = document.querySelector(":root");
 var mystyle = window.getComputedStyle(cssclass);
 
+// import * as d3 from "d3";
+import { process_FuelType, process_Renewable, chart_Renewable, chart_YearBuilt, chart_FuelType, chart_CapPerPop} from './bar_graph.js';
+import { zoom_to_bounds, getZoomLevel, numberWithCommas} from './utilities.js';
+import { getCountryPopulation } from './populationAPI.js';
+
 const filterGroup = document.getElementById('filter-group');
 
 mapboxgl.accessToken = 'pk.eyJ1IjoicHRyc3prd2N6IiwiYSI6ImNscGkxOHVvbjA2eW8ybG80NDJ3ajBtMWwifQ.L2qe-aJO35nls3sfd0WKPA';
@@ -9,8 +14,8 @@ let at = 'pk.eyJ1IjoicHRyc3prd2N6IiwiYSI6ImNscGkxOHVvbjA2eW8ybG80NDJ3ajBtMWwifQ.
  
 const map = new mapboxgl.Map({
     container: 'map', // container ID
-    // style: 'mapbox://styles/mapbox/streets-v12', // style URL
-    style: 'mapbox://styles/ptrszkwcz/clqmt03br00g201qrfnt9442u',
+    style: 'mapbox://styles/ptrszkwcz/cm7ppr7p6000401sncjoy9usq', // extra darlk
+    // style: 'mapbox://styles/ptrszkwcz/clqmt03br00g201qrfnt9442u', // dark
     center: [62, 49], // starting position [lng, lat]
     zoom: 3, // starting zoom
     // maxZoom: 15,
@@ -23,40 +28,32 @@ let hoveredPointId = null;
 let hoveredPolygonId = null;
 let clickedPointId = null;
 let clickedPolygonId = null;
+let countryName = null;
+let viz_type = 0;
 
 
 const cats = ['Biomass','Coal','Gas','Geothermal','Hydro','Nuclear','Oil','Solar','Tidal','Wind'];
-const cat_labels = ['Biomass','Coal','Gas','Geothermal','Hydro','Nuclear','Oil','Solar','Wave & Tidal','Wind'];;
 var filter_cats = [];
+let country_mode = false;
 
 const anals = ["anal1", "anal2", "anal3"];
 
 let console_tog = 1;
 
 const sourceA_Layer = "Global_Power_Plants-d5dhk4"
-const sourceB_Layer = "All_Countries-6jqzer"
+// const sourceB_Layer = "All_Countries-6jqzer"
+const sourceB_Layer = "All_Countries_zoomReady-6azvlf"
 
 
-// NO scaling with zoom level
-// const radius_styling = [
-//     [ 'interpolate', ['linear'], ['get', 'capacity_m'],
-//         0, 1.55,
-//         5000,25],
-//     [ 'interpolate', ['linear'], ['get', 'estimate_4'],
-//         0, 1.55,
-//         33000,25],
-//     [ 'interpolate', ['linear'], ['get', 'CapFac'],
-//         0.5, 1.55,
-//         1,25]
-// ]
-
-// SCALING with zoom level woot woot!
 const radius_styling = [
     // CORRECT ZOOM SYNTAX
     [ 'interpolate', ['linear'], ['zoom'],
-        2, [ 'interpolate', ['linear'], ['get', 'capacity_mw'], 0, 0.155, 5000,2.5], 
-        4, [ 'interpolate', ['linear'], ['get', 'capacity_mw'], 0, 1.55, 5000,25],
-        6, [ 'interpolate', ['linear'], ['get', 'capacity_mw'], 0, 3.1, 5000,50]],
+        // 2, [ 'interpolate', ['linear'], ['get', 'capacity_mw'], 0, 0.155, 5000,2.5], 
+        // 4, [ 'interpolate', ['linear'], ['get', 'capacity_mw'], 0, 1.55, 5000,25],
+        // 6, [ 'interpolate', ['linear'], ['get', 'capacity_mw'], 0, 3.1, 5000,50]],
+        2, [ 'interpolate', ['linear'], ['get', 'capacity_mw'], 0, 0.155, 14000,2.5], 
+        4, [ 'interpolate', ['linear'], ['get', 'capacity_mw'], 0, 1.55, 14000,55],
+        6, [ 'interpolate', ['linear'], ['get', 'capacity_mw'], 0, 3.1, 14000,100]],
     [ 'interpolate', ['linear'], ['zoom'],
         2, [ 'interpolate', ['linear'], ['get', 'estimated_generation_gwh_2017'], 0, 0.155, 33000,2.5], 
         4, [ 'interpolate', ['linear'], ['get', 'estimated_generation_gwh_2017'], 0, 1.55, 33000,25],
@@ -67,14 +64,54 @@ const radius_styling = [
         6, [ 'interpolate', ['linear'], ['get', ('estimated_generation_gwh_2017'/'capacity_mw')], 0.5, 3.1, 1,50]],
 ]
 
-// let 'A-PrimStyle' = "anal1"
+const circle_viz = [
+    [ 'match', ['get', 'primary_fuel'],
+        'Biomass', '#9e5418',
+        'Coal', '#fc0303',
+        'Gas', '#e01075',
+        // 'Gas', '#e04410',
+        'Geothermal', '#8800ff',
+        'Hydro', '#0398fc',
+        'Nuclear', '#ff00f7',
+        'Oil', '#eb7f7f',
+        'Solar', '#e3bb0e',
+        'Tidal', '#1859c9',
+        'Wind', '#12c474',
+        /* other */ '#000000'
+            ],
+    ['case',
+        ['has', 'commissioning_year'], 
+        ['interpolate', ['linear'], ['get', 'commissioning_year'],
+            1950, "#fa00f6",
+            1970, '#6200a3',
+            2000, '#3b50c4',
+            2020, '#2efc1c'
+        ],
+        "rgba(160,160,160,0.2)" //For no values
+    ],
+    [ 'match', ['get', 'primary_fuel'],
+        'Biomass', '#00de8d',
+        'Coal', '#ff005d',
+        'Gas', '#ff005d',
+        // 'Gas', '#e04410',
+        'Geothermal', '#00de8d',
+        'Hydro', '#00de8d',
+        'Nuclear', '#b31e5c',
+        'Oil', '#ff005d',
+        'Solar', '#00de8d',
+        'Tidal', '#00de8d',
+        'Wind', '#00de8d',
+        /* other */ '#000000'
+    ]
+]
+
 
 map.on('load', () => {
 
     map.addSource('source-B', {
         'type': 'vector',
-        // 'url': "mapbox://ptrszkwcz.clqq16a8mb7jd1up43l248y74-5f80h",
-        'url': "mapbox://ptrszkwcz.c1dnkwtp",
+        'url': "mapbox://ptrszkwcz.1x66qshk",
+        // 'url': "mapbox://ptrszkwcz.c1dnkwtp",
         'promoteId':'color_code' // Because mapbox fucks up when assigning IDs, make own IDs in QGIS and then set here!!!
     });
 
@@ -88,9 +125,10 @@ map.on('load', () => {
         'layout': {},
         'paint': {
             // 'fill-color': '#12c474', 
-            'fill-color': '#FFFFFF',
+            // 'fill-color': '#FFFFFF',
+            'fill-color': '#000000',
             'fill-opacity': [ 'case', 
-            ['boolean', ['feature-state', 'hoverB'], false], 0.05, 0],
+            ['boolean', ['feature-state', 'hoverB'], false], 0.1, 0],
             },
     });
 
@@ -102,9 +140,10 @@ map.on('load', () => {
         'layout': {},
         'paint': {
             // 'fill-color': '#12c474', 
-            'fill-color': '#FFFFFF',
+            // 'fill-color': '#FFFFFF',
+            'fill-color': '#000000',
             'fill-opacity': [ 'case', 
-            ['boolean', ['feature-state', 'highl_click_B'], false], 0.05, 0],
+            ['boolean', ['feature-state', 'highl_click_B'], false], 0.1, 0],
             },
     });
 
@@ -115,10 +154,10 @@ map.on('load', () => {
         'source-layer': sourceB_Layer,
         'layout': {},
         'paint': {
-            'line-width': 0.2,
+            'line-width': 0.4,
             'line-color': '#FFFFFF', 
             'line-opacity': [ 'case', 
-            ['boolean', ['feature-state', 'highl_click_B'], false], 0.8, 0],
+            ['boolean', ['feature-state', 'highl_click_B'], false], 0.9, 0],
             },
     });
 
@@ -129,7 +168,6 @@ map.on('load', () => {
         'promoteId':'gppd_idnr' // Because mapbox fucks up when assigning IDs, make own IDs in QGIS and then set here!!!
     });
 
-
     map.addLayer({
         'id': 'A-PrimStyle',
         'type': 'circle',
@@ -139,24 +177,7 @@ map.on('load', () => {
         'paint': {
             'circle-radius': radius_styling[0],
             // 'circle-color': , 
-            'circle-color': [
-                'case',
-                ['boolean', ['feature-state', 'dim_noselect'], false], 'rgba(70,70,70,0.6)', // Gray color when 'select' is true
-                ['match', ['get', 'primary_fuel'],
-                    'Biomass', '#9e5418',
-                    'Coal', '#fc0303',
-                    'Gas', '#e01075',
-                    // 'Gas', '#e04410',
-                    'Geothermal', '#8800ff',
-                    'Hydro', '#0398fc',
-                    'Nuclear', '#ff00f7',
-                    'Oil', '#eb7f7f',
-                    'Solar', '#e3bb0e',
-                    'Tidal', '#1859c9',
-                    'Wind', '#12c474',
-                    /* other */ '#000000'
-                ]
-            ],
+            'circle-color': circle_viz[viz_type],
             'circle-opacity': 0.5
             },
     });
@@ -171,18 +192,42 @@ map.on('load', () => {
     //         'circle-radius': radius_styling[0],
     //         // 'circle-color': , 
     //         'circle-color': [ 'match', ['get', 'primary_fuel'],
-    //             'Biomass', '#9e5418',
-    //             'Coal', '#fc0303',
-    //             'Gas', '#e01075',
+    //             'Biomass', '#00de8d',
+    //             'Coal', '#ff005d',
+    //             'Gas', '#ff005d',
     //             // 'Gas', '#e04410',
-    //             'Geothermal', '#8800ff',
-    //             'Hydro', '#0398fc',
-    //             'Nuclear', '#ff00f7',
-    //             'Oil', '#eb7f7f',
-    //             'Solar', '#e3bb0e',
-    //             'Tidal', '#1859c9',
-    //             'Wind', '#12c474',
+    //             'Geothermal', '#00de8d',
+    //             'Hydro', '#00de8d',
+    //             'Nuclear', '#b31456',
+    //             'Oil', '#ff005d',
+    //             'Solar', '#00de8d',
+    //             'Tidal', '#00de8d',
+    //             'Wind', '#00de8d',
     //             /* other */ '#000000'
+    //         ],
+    //         'circle-opacity': 0.5
+    //         },
+    // });
+
+    // COMMISSIONING YEAR
+    // map.addLayer({
+    //     'id': 'A-PrimStyle',
+    //     'type': 'circle',
+    //     'source': 'source-A', 
+    //     'source-layer':sourceA_Layer,
+    //     'layout': {},
+    //     'paint': {
+    //         'circle-radius': radius_styling[0],
+    //         // 'circle-color': , 
+    //         'circle-color': [
+    //             'case',
+    //             ['has', 'commissioning_year'], 
+    //             ['interpolate', ['linear'], ['get', 'commissioning_year'],
+    //                 1960, '#6200a3',
+    //                 2000, '#3b50c4',
+    //                 2020, '#2efc1c'
+    //             ],
+    //             "rgba(160,160,160,0.2)" //For no values
     //         ],
     //         'circle-opacity': 0.5
     //         },
@@ -207,244 +252,68 @@ map.on('load', () => {
         }
     }); 
 
-
-    //HIHGLIGHT ON CLICK, POIMT ---------------------------------------------------------------
-    map.addLayer({
-        'id': 'A-Click-point',
-        'type': 'circle',
-        'source': 'source-A', // reference the data source
-        'source-layer':sourceA_Layer,
-        'layout': {},
-        'paint': {
-            'circle-color': "rgba(0,0,0,0)",
-            'circle-stroke-color': mystyle.getPropertyValue("--highl_color"),
-            'circle-stroke-width': [ 'case', 
-                ['boolean', ['feature-state', 'highl_click'], false], 2, 0],
-            'circle-radius': radius_styling[0],
-            'circle-opacity': [ 'case', 
-            ['boolean', ['feature-state', 'highl_click'], false], 1, 0]
-        }
-    }); 
-
-     // POP-UP ON HOVER ---------------------------------------------------------------
-
-    const popup = new mapboxgl.Popup({
-        closeButton: false,
-    });
-
-    map.on('mouseenter', 'A-PrimStyle', (e) => {
-        // new mapboxgl.Popup()
-        feature = e.features[0]
-        // console.log(feature.geometry.coordinates[0])
-
-        // clean popup numbers 
-        let plant_cap = numberWithCommas(Math.round(feature.properties.capacity_mw))
-        let pow_gen = numberWithCommas(Math.round(feature.properties.estimated_generation_gwh_2017))
-        let cap_fac = Math.round(feature.properties.CapFac*100)
-
-        popup.setLngLat(feature.geometry.coordinates)
-        // popup.setLngLat(getFeatureCenter(feature))
-        // popup.setLngLat(e.lngLat)
-        .setHTML(`
-                <div class = "pop-title">${feature.properties.name}</div>
-                <div class = "pop-line"></div>
-
-                <div class = "pop-entry">
-                    <div class = "pop-field">Primary Fuel</div>
-                    <div class = "pop-value">${feature.properties.primary_fuel}</div>
-                </div>
-                <div class = "pop-entry">
-                    <div class = "pop-field">Plant Capacity</div>
-                    <div class = "pop-unit">(MW)</div>
-                    <div class = "pop-value">${plant_cap}</div>
-                </div>
-                <div class = "pop-entry">
-                    <div class = "pop-field">Power Generation</div>
-                    <div class = "pop-unit">(GW)</div>
-                    <div class = "pop-value">${pow_gen}</div>
-                </div>
-                  `)
-        .addTo(map);
-    });
-
-    map.on('mouseleave', 'A-PrimStyle', () => {
-        popup.remove();
-    });
-    
-
-    // // POPUP ON CLICK ---------------------------------------------------------------
-    // const popup = new mapboxgl.Popup({
-    //     closeButton: false,
-    // });
-
-    // // this function finds the center of a feature (to set popup) 
-    // function getFeatureCenter(feature) {
-    //     let center = [];
-    //     let latitude = 0;
-    //     let longitude = 0;
-    //     let height = 0;
-    //     let coordinates = [];
-    //     feature.geometry.coordinates.forEach(function (c) {
-    //         let dupe = [];
-    //         if (feature.geometry.type === "MultiPolygon")
-    //             dupe.push(...c[0]); //deep clone to avoid modifying the original array
-    //         else 
-    //             dupe.push(...c); //deep clone to avoid modifying the original array
-    //         dupe.splice(-1, 1); //features in mapbox repeat the first coordinates at the end. We remove it.
-    //         coordinates = coordinates.concat(dupe);
-    //     });
-    //     if (feature.geometry.type === "Point") {
-    //         center = coordinates[0];
+    // //HIHGLIGHT ON CLICK, POIMT ---------------------------------------------------------------
+    // map.addLayer({
+    //     'id': 'A-Click-point',
+    //     'type': 'circle',
+    //     'source': 'source-A', // reference the data source
+    //     'source-layer':sourceA_Layer,
+    //     'layout': {},
+    //     'paint': {
+    //         'circle-color': "rgba(0,0,0,0)",
+    //         'circle-stroke-color': mystyle.getPropertyValue("--highl_color"),
+    //         'circle-stroke-width': [ 'case', 
+    //             ['boolean', ['feature-state', 'highl_click'], false], 2, 0],
+    //         'circle-radius': radius_styling[0],
+    //         'circle-opacity': [ 'case', 
+    //         ['boolean', ['feature-state', 'highl_click'], false], 1, 0]
     //     }
-    //     else {
-    //         coordinates.forEach(function (c) {
-    //             latitude += c[0];
-    //             longitude += c[1];
-    //         });
-    //         center = [latitude / coordinates.length, longitude / coordinates.length];
-    //     }
+    // }); 
 
-    //     return center;
-    // }
 
-    // this function adds a common to numbers  
-    function numberWithCommas(x) {
-        x = x.toString();
-        var pattern = /(-?\d+)(\d{3})/;
-        while (pattern.test(x))
-            x = x.replace(pattern, "$1,$2");
-        return x;
-    }
-
-    // map.on('click', 'A-PrimStyle', (e) => {
-    //     new mapboxgl.Popup()
-    //     feature = e.features[0]
-    //     // console.log(feature.geometry.coordinates[0])
-
-    //     // clean popup numbers 
-    //     let plant_cap = numberWithCommas(Math.round(feature.properties.capacity_mw))
-    //     let pow_gen = numberWithCommas(Math.round(feature.properties.estimated_generation_gwh_2017))
-    //     let cap_fac = Math.round(feature.properties.CapFac*100)
-
-    //     popup.setLngLat(feature.geometry.coordinates)
-    //     // popup.setLngLat(getFeatureCenter(feature))
-    //     // popup.setLngLat(e.lngLat)
-    //     .setHTML(`
-    //             <div class = "pop-title">${feature.properties.name}</div>
-    //             <div class = "pop-line"></div>
-
-    //             <div class = "pop-entry">
-    //                 <div class = "pop-field">Primary Fuel</div>
-    //                 <div class = "pop-value">${feature.properties.primary_fuel}</div>
-    //             </div>
-    //             <div class = "pop-entry">
-    //                 <div class = "pop-field">Plant Capacity</div>
-    //                 <div class = "pop-unit">(MW)</div>
-    //                 <div class = "pop-value">${plant_cap}</div>
-    //             </div>
-    //             <div class = "pop-entry">
-    //                 <div class = "pop-field">Power Generation</div>
-    //                 <div class = "pop-unit">(GW)</div>
-    //                 <div class = "pop-value">${pow_gen}</div>
-    //             </div>
-    //             <div class = "pop-entry">
-    //                 <div class = "pop-field">Capacity Factor</div>
-    //                 <div class = "pop-unit">%</div>
-    //                 <div class = "pop-value">${cap_fac}</div>
-    //             </div>
-    //               `)
-    //     .addTo(map);
-    // });
-    
-    // HIGHLIGHT ON CLICK BOOLEAN  (A) ---------------------------------------------------------------
-    map.on('click', 'A-PrimStyle', (e) => {
-        if (e.features.length > 0) {
-            if (clickedPointId !== null) {
-                map.setFeatureState(
-                    { source: 'source-A', sourceLayer: sourceA_Layer, id: clickedPointId },
-                    { click: false, highl_click: false }
-                    );
-            }
-
-            clickedPointId = e.features[0].id;
-            // hoveredPolygonId = e.features[0].properties.featID;
-
-            map.setFeatureState(
-                { source: 'source-A', sourceLayer: sourceA_Layer, id: clickedPointId },
-                { click: true, highl_click: true }
-            );
-        } 
-    });
- 
-    // CLICK HIGHLIGHT CLOSE ON CLICK --------------------------------------------------------------- 
-    map.on('click', (e) => {
-        let counter = 0;
-        const quer_features = map.queryRenderedFeatures(e.point);
-        for (let i = 0; i < quer_features.length; i++) {
-            if (quer_features[i].layer.id === 'A-PrimStyle'){
-                counter += 1;
-            }
-        }
-
-        if (counter == 0) {
-            map.setFeatureState(
-                    { source: 'source-A', sourceLayer: sourceA_Layer, id: clickedPointId },
-                    { highl_click: false }
-                );
-        }
-    }); 
-
-    // HIGHLIGHT ON CLICK BOOLEAN  (B) ---------------------------------------------------------------
+    // CLICK ON COUNTRY (B) ---------------------------------------------------------------
     map.on('click', 'B-Countries-fill', (e) => {
-        const filteredFeatures = map.querySourceFeatures('source-A', {
-            sourceLayer: sourceA_Layer // Only needed for vector sources
-        });
-        console.log(filteredFeatures.length)
-        let countryName = e.features[0].properties.iso3
+        countryName = e.features[0].properties.iso3
+        let fullName = e.features[0].properties.name
 
         if (e.features.length > 0) {
             if (clickedPolygonId !== null) {
                 map.setFeatureState(
                     { source: 'source-B', sourceLayer: sourceB_Layer, id: clickedPolygonId },
                     { highl_click_B: false}
-                );  
-                
-                // Loop through and apply state to matching features
-                filteredFeatures.forEach(feature => {
-                        map.setFeatureState(
-                            { source: 'source-A', sourceLayer: sourceA_Layer, id: feature.id },
-                            { dim_noselect: false }
-                        );
-                });
-                // map.setFeatureState(
-                //         { source: 'source-A', sourceLayer: sourceA_Layer, id: clickedPointId },
-                //         { dim_noselect: false }
-                // );
+                );
+                // country_mode = false;  
+                composite_filter(country_mode = false, filter_cats, countryName)
             }
 
             clickedPolygonId = e.features[0].id;
-            // hoveredPolygonId = e.features[0].properties.featID;
 
             map.setFeatureState(
                 { source: 'source-B', sourceLayer: sourceB_Layer, id: clickedPolygonId },
                 { clic_B: true, highl_click_B: true}
             );
-            filteredFeatures.forEach(feature => {
-                if (feature.properties.country != countryName) {
-                    map.setFeatureState(
-                        { source: 'source-A', sourceLayer: sourceA_Layer, id: feature.id },
-                        { dim_noselect: true }
-                    );
-                }
-            });
+
+            // country_mode = true; 
+            composite_filter(country_mode = true, filter_cats, countryName)
+
+            d3.select("#chart-container").selectAll("svg").remove(); //removes the previous chart
+            d3.select("#chart-container").selectAll("div").remove(); //removes chart title
+
+            document.getElementById("graph-popup-id").style.display = "block";
+            document.getElementById("graph-coutry-id").innerHTML = `${e.features[0].properties.name}`;
+
+            map.once('idle', () => {
+                let fFeatures = map.queryRenderedFeatures({ layers: ['A-PrimStyle']});
+                let isocode = fFeatures[0].properties.country
+
+                displayChart(viz_type, fFeatures, isocode)
+            });  
         };
+        return countryName
     });
     
     // CLICK HIGHLIGHT CLOSE ON CLICK --------------------------------------------------------------- 
     map.on('click', (e) => {
-        const filteredFeatures = map.querySourceFeatures('source-A', {
-            sourceLayer: sourceA_Layer // Only needed for vector sources
-        });
         let counter = 0;
         const quer_features = map.queryRenderedFeatures(e.point);
         for (let i = 0; i < quer_features.length; i++) {
@@ -457,30 +326,29 @@ map.on('load', () => {
                     { source: 'source-B', sourceLayer: sourceB_Layer, id: clickedPolygonId },
                     { highl_click_B: false}
             );
-            filteredFeatures.forEach(feature => {
-                map.setFeatureState(
-                    { source: 'source-A', sourceLayer: sourceA_Layer, id: feature.id },
-                    { dim_noselect: false }
-                );
-            });
+            country_mode = false;
+            composite_filter(country_mode = false, filter_cats, countryName)
+            // map.setFilter('A-PrimStyle', null);
             document.getElementById("graph-popup-id").style.display = "none"
         }
     }); 
 
 
     // CHANGE MOUSE APPEARANCE --------------------------------------------------------------- 
-    map.on('mouseenter', 'A-PrimStyle', () => {
+    map.on('mouseenter', 'B-Countries-fill', () => {
         map.getCanvas().style.cursor = 'pointer';
     });
     
-    map.on('mouseleave', 'A-PrimStyle', () => {
+    map.on('mouseleave', 'B-Countries-fill', () => {
         map.getCanvas().style.cursor = 'move';
     });
 
-  
     
     // HIGHLIGHT ON HOVER BOOLEAN (A PRIM STYLE) --------------------------------------------------------------- 
+    const popup = new mapboxgl.Popup({closeButton: false,});
+
     map.on('mousemove', 'A-PrimStyle', (e) => {
+        let feature = e.features[0]
         if (e.features.length > 0) {
 
             if (hoveredPointId !== null) {
@@ -497,6 +365,38 @@ map.on('load', () => {
                 { source: 'source-A', sourceLayer: sourceA_Layer, id: hoveredPointId },
                 { hoverA: true }
             );
+
+            // ADD POP UP
+            let plant_cap = numberWithCommas(Math.round(feature.properties.capacity_mw))
+            let pow_gen = numberWithCommas(Math.round(feature.properties.estimated_generation_gwh_2017))
+            let year_com = feature.properties.commissioning_year
+
+            if (typeof year_com === 'undefined') {
+                year_com = "-";
+            } else{
+                year_com = parseInt(year_com)
+            }
+
+            popup.setLngLat(feature.geometry.coordinates)
+            .setHTML(`
+                    <div class = "pop-title">${feature.properties.name}</div>
+                    <div class = "pop-line"></div>
+
+                    <div class = "pop-entry">
+                        <div class = "pop-field">Primary Fuel</div>
+                        <div class = "pop-value">${feature.properties.primary_fuel}</div>
+                    </div>
+                    <div class = "pop-entry">
+                        <div class = "pop-field">Plant Capacity</div>
+                        <div class = "pop-unit">(MW)</div>
+                        <div class = "pop-value">${plant_cap}</div>
+                    </div>
+                    <div class = "pop-entry">
+                        <div class = "pop-field">Commissioning Year</div>
+                        <div class = "pop-value">${year_com}</div>
+                    </div>
+                    `)
+            .addTo(map);
         }
     });
  
@@ -508,9 +408,11 @@ map.on('load', () => {
                 { source: 'source-A', sourceLayer: sourceA_Layer, id: hoveredPointId },
                 { hoverA: false }
             );
+            popup.remove();
         }
         hoveredPointId = null;
     });
+
 
     // HIGHLIGHT ON HOVER BOOLEAN (B COUNTRIES) --------------------------------------------------------------- 
     map.on('mousemove', 'B-Countries-fill', (e) => {
@@ -532,7 +434,6 @@ map.on('load', () => {
             );
         }
     });
- 
         
     // When the mouse leaves the state-fill layer, update the feature state of the
     map.on('mouseleave', 'B-Countries-fill', () => {
@@ -547,7 +448,7 @@ map.on('load', () => {
 
 
 
-    // CLICK TO FILTER (INTEGRATED INTO LEGEND) ---------------------------------------------------------------
+    // CLICK TO FILTER (INTEGRATED INTO LEGEND) -o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-o-
 
     for (let i = 0; i < cats.length; i++) {
 
@@ -562,7 +463,7 @@ map.on('load', () => {
         sessionDiv.addEventListener('click', (e) => {
 
             let parent_element = sessionDiv.parentElement.parentElement
-            filter_select = e.target.id
+            let filter_select = e.target.id
 
             if (filter_cats.includes(filter_select)){
                 const del_index = filter_cats.indexOf(filter_select);
@@ -581,153 +482,100 @@ map.on('load', () => {
                 document.getElementById(ID_symbol).classList.remove("active");
             }
 
-            if (filter_cats.length > 0){
-                map.setFilter('A-PrimStyle', ['match', ['get', 'primary_fuel'], filter_cats,false,true]);
+            async function runFunctions() {
+                await composite_filter(country_mode, filter_cats, countryName); // Ensures this finishes first
+            
+                // Wait for the map to be fully loaded before querying features
+                await new Promise(resolve => {
+                    if (map.isStyleLoaded()) {
+                        resolve();
+                    } else {
+                        map.once('idle', resolve);
+                    }
+                });
+            
+                const fFeatures = map.queryRenderedFeatures({
+                    layers: ['A-PrimStyle'] 
+                });
+            
+                let fuelData = process_FuelType(fFeatures);
+                console.log(fuelData);
+            
+                if (country_mode) {
+                    drawBarChart(fuelData, countryName); 
+                }
             }
-            else{
-                map.setFilter('A-PrimStyle', null)
-            }
+            
+            runFunctions();
+
         });
     }
 
     // CLICK TO CHANGE ANALYSIS ---------------------------------------------------------------
 
-    const dropDownButton = document.querySelector('#dropdown-butt');
+    // const dropDownButton = document.querySelector('#dropdown-butt');
 
-    for (let i = 0; i < anals.length; i++) {
+    // for (let i = 0; i < anals.length; i++) {
 
-        const hash = "#"
-        const ID_name = hash.concat(anals[i])
+    //     const hash = "#"
+    //     const ID_name = hash.concat(anals[i])
 
-        const sessionDiv = document.querySelector(ID_name);
+    //     const sessionDiv = document.querySelector(ID_name);
 
-        sessionDiv.onclick = function (e) {
-            // const clickedLayer = this.textContent;
-            const clickedLayer = sessionDiv.id
+    //     sessionDiv.onclick = function (e) {
+    //         // const clickedLayer = this.textContent;
+    //         const clickedLayer = sessionDiv.id
 
-            e.preventDefault();
-            e.stopPropagation();
+    //         e.preventDefault();
+    //         e.stopPropagation();
 
-            for (let i = 0; i < anals.length; i++){
-                const hash = "#"
-                const ID_name = hash.concat(anals[i])
+    //         for (let i = 0; i < anals.length; i++){
+    //             const hash = "#"
+    //             const ID_name = hash.concat(anals[i])
 
-                if (anals[i] != clickedLayer){
-                    // console.log(i)
-                    // map.setLayoutProperty(anals[i], 'visibility', 'none');
+    //             if (anals[i] != clickedLayer){
+    //                 // console.log(i)
+    //                 // map.setLayoutProperty(anals[i], 'visibility', 'none');
 
-                    let noclickDiv = document.querySelector(ID_name);
-                    const noclickclass = noclickDiv.classList;
-                    noclickclass.remove("checked")
+    //                 let noclickDiv = document.querySelector(ID_name);
+    //                 const noclickclass = noclickDiv.classList;
+    //                 noclickclass.remove("checked")
 
-                    document.getElementById("entry-".concat(i)).classList.remove("active");
+    //                 document.getElementById("entry-".concat(i)).classList.remove("active");
 
-                }
-                else {
-                    // map.setLayoutProperty(anals[i], 'visibility', 'visible');
-                    // 'A-PrimStyle' = anals[i]
+    //             }
+    //             else {
+    //                 // map.setLayoutProperty(anals[i], 'visibility', 'visible');
+    //                 // 'A-PrimStyle' = anals[i]
                     
-                    // console.log(dropDownButton.textContent)
-                    dropDownButton.textContent = e.target.text
-                    map.setPaintProperty('A-PrimStyle', 'circle-radius', radius_styling[i]);
-                    map.setPaintProperty('A-Hover-point', 'circle-radius', radius_styling[i]);
-                    map.setPaintProperty('A-Click-point', 'circle-radius', radius_styling[i]);
+    //                 // console.log(dropDownButton.textContent)
+    //                 dropDownButton.textContent = e.target.text
+    //                 map.setPaintProperty('A-PrimStyle', 'circle-radius', radius_styling[i]);
+    //                 map.setPaintProperty('A-Hover-point', 'circle-radius', radius_styling[i]);
+    //                 map.setPaintProperty('A-Click-point', 'circle-radius', radius_styling[i]);
 
-                    document.getElementById("entry-".concat(i)).classList.add("active");
-                    // document.getElementById("entry-".concat(2)).classList.toggle("active");
-                    // document.getElementById("entry-".concat(intlist[i+1])).classList.remove("active");
+    //                 document.getElementById("entry-".concat(i)).classList.add("active");
+    //                 // document.getElementById("entry-".concat(2)).classList.toggle("active");
+    //                 // document.getElementById("entry-".concat(intlist[i+1])).classList.remove("active");
                 
-                    const clickclass = sessionDiv.classList;
-                    let clickDiv = document.querySelector(ID_name);
-                    const noclickclass = clickDiv.classList;
-                    clickclass.add("checked")
-                }
-            }
-        }
-    }
+    //                 const clickclass = sessionDiv.classList;
+    //                 let clickDiv = document.querySelector(ID_name);
+    //                 const noclickclass = clickDiv.classList;
+    //                 clickclass.add("checked")
+    //             }
+    //         }
+    //     }
+    // }
 
-    // INSTRUCTION POPUP -ANALYSIS BUTTON ---------------------------------------------------------------
-
-    const elementToHover = document.getElementById('dropdown-butt');
-    const elementToPopup = document.getElementById('instruct-anal');
-    const triangToPopup = document.getElementById('popup tip');
-
-    elementToHover.addEventListener('mouseenter',(e) => {
-
-        var rect = elementToHover.getBoundingClientRect();
-
-        let posX = (rect.right+rect.left)/2
-        let posY = rect.bottom 
-
-        var m_pos_x,m_pos_y;
-   
-        window.onmousemove = function(e) { m_pos_x = e.pageX; m_pos_y = e.pageY; }
-
-        setTimeout(function() { 
-            m_pos_x
-            m_pos_y
-            if (m_pos_x > rect.left && m_pos_x < rect.right && m_pos_y > rect.top && m_pos_y < rect.bottom) {
-                elementToPopup.style.display = 'block';
-                elementToPopup.style.left = `${posX}px`;
-                elementToPopup.style.top = `${posY}px`;
-
-                triangToPopup.style.display = 'block';
-                triangToPopup.style.left = `${posX}px`;
-                triangToPopup.style.top = `${posY-12}px`;
-                }
-            else {}; 
-        },2000);
-
-    });
-
-
-    elementToHover.addEventListener('mouseleave',(f) => {
-        elementToPopup.style.display = 'none';
-        triangToPopup.style.display = 'none';
-    });
-
-
-    // INSTRUCTION POPUP - LAYER TOGGLES ---------------------------------------------------------------
-
-    const elementToHover2 = document.getElementById('toggle group');
-    const elementToPopup2 = document.getElementById('instruct-tog');
-
-    elementToHover2.addEventListener('mouseenter',(e) => {
-
-        var rect = elementToHover2.getBoundingClientRect();
-
-        let posX = (rect.right+rect.left)/2
-        let posY = rect.bottom + 25
-
-        var m_pos_x,m_pos_y;
-   
-        window.onmousemove = function(e) { m_pos_x = e.pageX; m_pos_y = e.pageY; }
-
-        setTimeout(function() { 
-            m_pos_x
-            m_pos_y
-            if (m_pos_x > rect.left && m_pos_x < rect.right && m_pos_y > rect.top && m_pos_y < rect.bottom) {
-                elementToPopup2.style.display = 'block';
-                elementToPopup2.style.left = `${posX}px`;
-                elementToPopup2.style.top = `${posY}px`;
-
-                triangToPopup.style.display = 'block';
-                triangToPopup.style.left = `${posX}px`;
-                triangToPopup.style.top = `${posY-12}px`;
-                }
-            else {}; 
-        },2000);
-
-    });
-
-    elementToHover2.addEventListener('mouseleave',(f) => {
-        elementToPopup2.style.display = 'none';
-        triangToPopup.style.display = 'none';
-    });
+    
     
 });
 
-// Nav bar hide-show
+// SLIDE NAV BAR IN/OUT ---------------------------------------------------------------
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("console_butt-id").addEventListener("click", toggleNav);   
+});
 
 function toggleNav(){
     if (console_tog === 1){
@@ -737,6 +585,8 @@ function toggleNav(){
         document.getElementById("console_butt-id").style.paddingBottom = "0px";
         document.getElementById("console_butt-id").innerHTML = `&#9654`;
         console_tog = 0
+        console.log("YEES 0")
+        // return console_tog
     }
     else {
         document.getElementById("console-id").style.left = "0px";
@@ -745,9 +595,76 @@ function toggleNav(){
         document.getElementById("console_butt-id").style.paddingTop = "4px";
         document.getElementById("console_butt-id").style.paddingBottom = "3px";
         console_tog = 1
+        // return console_tog
     }
 }
-    
+
+// console_tog = toggleNav(console_tog)
+
+
+
+// ZOOM TO POLYGON ---------------------------------------------------------------
+
+map.on('click', 'B-Countries-fill', (e) => {
+    if (!e.features || e.features.length === 0) return;
+    let feature = e.features[0]
+
+    // Fit the map view to the bounds with dynamic padding
+    let bounds_ftr = zoom_to_bounds(feature)
+    map.fitBounds(bounds_ftr.small_bbox, {
+        padding: 100,
+        animate: true,  
+        duration: 2000,  // Smooth transition time
+        linear: false,   // Ease in-out transition
+        maxZoom: getZoomLevel(bounds_ftr.ftr_width, bounds_ftr.ftr_height) 
+    });
+
+});
+
+function composite_filter(country_mode, filter_cats, countryName){
+    // console.log(country_mode, filter_cats, countryName)
+    if (filter_cats.length > 0){
+        if (country_mode){
+            map.setFilter('A-PrimStyle', [
+                "all",
+                ['match', ['get', 'primary_fuel'], filter_cats,false,true],
+                ['==', ['get', 'country'], countryName]
+            ]);
+        } else{
+            map.setFilter('A-PrimStyle',['match', ['get', 'primary_fuel'], filter_cats,false,true])
+        }
+    }
+    else{
+        if (country_mode){
+            map.setFilter('A-PrimStyle',['==', ['get', 'country'], countryName])
+        }else{
+            map.setFilter('A-PrimStyle', null)
+        }
+    }
+}
+
+
+// CLOSE BUTTON, GRAPH POPUP ---------------------------------------------------------------
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("graphpopup-close-id").addEventListener("click", () => {
+        closeDiv(filter_cats, countryName);
+    });
+});
+
+function closeDiv(filter_cats, countryName) {
+    document.getElementById("graph-popup-id").style.display = "none"
+
+    // map.setFilter('A-PrimStyle', null);
+    composite_filter(country_mode=false, filter_cats, countryName)
+
+    map.setFeatureState(
+        { source: 'source-B', sourceLayer: sourceB_Layer, id: clickedPolygonId },
+        { click_B: false, highl_click_B: false}
+    );
+};
+
+// SET FOG ---------------------------------------------------------------
 map.on('style.load', () => {
     map.setFog({
         "range": [5, 8],
@@ -760,320 +677,57 @@ map.on('style.load', () => {
 });
 
 
-// INSTRUCTION POPUP - LAYER TOGGLES ---------------------------------------------------------------
+// VIZ BUTTON FUNCTIONALITY ---------------------------------------------------------------
+document.addEventListener("DOMContentLoaded", function () {
+    const buttons = document.querySelectorAll(".viz-but");
 
-const secondsPerRevolution = 360;
-// Above zoom level 5, do not rotate.
-const maxSpinZoom = 4;
-// Rotate at intermediate speeds between zoom levels 3 and 5.
-const slowSpinZoom = 3;
+    buttons.forEach((button, index) => {
+        button.addEventListener("click", function () {
+            // Remove "active" class from all buttons
+            buttons.forEach(btn => btn.classList.remove("active"));
 
-let userInteracting = false;
-let spinEnabled = true;
+            // Add "active" class to the clicked button
+            this.classList.add("active");
 
-function spinGlobe() {
-    const zoom = map.getZoom();
-    if (spinEnabled && !userInteracting && zoom < maxSpinZoom) {
-        let distancePerSecond = 360 / secondsPerRevolution;
-        if (zoom > slowSpinZoom) {
-            // Slow spinning at higher zooms
-            const zoomDif =
-                (maxSpinZoom - zoom) / (maxSpinZoom - slowSpinZoom);
-            distancePerSecond *= zoomDif;
-        }
-        const center = map.getCenter();
-        center.lng -= distancePerSecond;
-        // Smoothly animate the map over one second.
-        // When this animation is complete, it calls a 'moveend' event.
-        map.easeTo({ center, duration: 1000, easing: (n) => n });
+            // Log the index of the clicked button (0, 1, or 2)
+            // console.log(index);
+            map.setPaintProperty('A-PrimStyle', 'circle-color', circle_viz[index]);
+            viz_type = index
+            map.once('idle', () => {
+                let fFeatures = map.queryRenderedFeatures({ layers: ['A-PrimStyle']});
+                let isocode = fFeatures[0].properties.country
+
+                displayChart(viz_type, fFeatures, isocode)
+                document.querySelectorAll(".legend-container").forEach(div => div.style.display = "none");
+                document.getElementById(`legend-${index}`).style.display = "block";
+            });  
+
+            
+        });
+    });
+});
+
+function displayChart(viz_type, fFeatures, isocode){
+    let country_long = fFeatures[0].properties.country_long
+    let country_short = fFeatures[0].properties.country
+    if (viz_type === 0){
+        let fuelData = process_FuelType(fFeatures)
+        chart_FuelType(fuelData)
+        chart_CapPerPop(country_short, country_long, fuelData, isocode);
+        // drawBarChart(fuelData, countryName);
+    } if (viz_type === 1){
+        chart_YearBuilt(country_short, country_long, fFeatures)
+    } if (viz_type === 2){
+        let renewData = process_Renewable(fFeatures)
+        chart_Renewable({ continent: country_short, Renewable: renewData.percRenewable , Nuclear: renewData.percNuclear , Nonrenewable: renewData.percNonRenewable}, country_long);
     }
 }
 
 
-// SPIN GLOBE ---------------------------------------------------------------
 
-   // Pause spinning on interaction
-   map.on('mousedown', () => {
-    userInteracting = true;
-});
 
-// Restart spinning the globe when interaction is complete
-map.on('mouseup', () => {
-    userInteracting = false;
-    delaySpinGlobe();
-});
 
-// These events account for cases where the mouse has moved
-// off the map, so 'mouseup' will not be fired.
-map.on('dragend', () => {
-    userInteracting = false;
-    delaySpinGlobe();
-});
-map.on('pitchend', () => {
-    userInteracting = false;
-    delaySpinGlobe();
-});
-map.on('rotateend', () => {
-    userInteracting = false;
-    delaySpinGlobe();
-});
-
-// When animation is complete, start spinning if there is no ongoing interaction
-map.on('moveend', () => {
-    delaySpinGlobe();
-});
-
-// document.getElementById('btn-spin').addEventListener('click', (e) => {
-//     spinEnabled = !spinEnabled;
-//     if (spinEnabled) {
-//         spinGlobe();
-//         e.target.innerHTML = 'Pause rotation';
-//     } else {
-//         map.stop(); // Immediately end ongoing animation
-//         e.target.innerHTML = 'Start rotation';
-//     }
+// document.addEventListener("DOMContentLoaded", () => {
+//     document.getElementById("console_butt-id").addEventListener("click", toggleNav);   
 // });
 
-function delaySpinGlobe() {
-    // setTimeout(spinGlobe, 15000); //wait 15 seonds before spin 
-}
-
-// Call the function to start the delay
-delaySpinGlobe();
-
-
-// Zoom to clicked polygon ---------------------------------------------------------------
-
-
-// var coordinates = f.geometry.coordinates[0];
-// var bounds = coordinates.reduce(function (bounds, coord) {
-//     return bounds.extend(coord);
-// }, new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]));
-
-// map.fitBounds(bounds, {
-//     padding: 20
-// });
-
-
-
-map.on('click', 'B-Countries-fill', (e) => {
-    if (!e.features || e.features.length === 0) return;
-
-    // Always get the full geometry from the first feature
-    const feature = e.features[0]; 
-    let coordinates = [];
-
-    if (feature.geometry.type === 'Point') {
-        coordinates = [feature.geometry.coordinates];
-    } else if (feature.geometry.type === 'LineString' || feature.geometry.type === 'MultiPoint') {
-        coordinates = feature.geometry.coordinates;
-    } else if (feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiLineString') {
-        coordinates = feature.geometry.coordinates.flat();
-    } else if (feature.geometry.type === 'MultiPolygon') {
-        coordinates = feature.geometry.coordinates.flat(2); // Flatten deeply for MultiPolygons
-    }
-
-    if (coordinates.length === 0) return;
-
-    const lats = coordinates.map(coord => coord[1]);
-    const lngs = coordinates.map(coord => coord[0]);
-
-    const bounds = new mapboxgl.LngLatBounds(
-        [Math.min(...lngs), Math.min(...lats)], // Southwest corner
-        [Math.max(...lngs), Math.max(...lats)]  // Northeast corner
-    );
-
-    console.log(coordinates.length)
-    console.log('Bounds:', bounds);
-
-    // Dynamically adjust padding based on feature size
-    const width = Math.abs(bounds.getEast() - bounds.getWest());
-    const height = Math.abs(bounds.getNorth() - bounds.getSouth());
-
-    // Dynamically adjust padding based on the country size
-    // const width = bounds[1][0]-bounds[0][0];
-    // const height = bounds[1][1]-bounds[0][1];
-
-    // console.log(width,height)
-
-    let dynamicPadding = Math.max(100, Math.min(width, height) * 100); // Adjust padding based on size
-    dynamicPadding = Math.min(dynamicPadding, 700); // Cap padding to avoid excessive space
-
-    // Fit the map view to the bounds with dynamic padding
-    map.fitBounds(bounds, {
-        padding: dynamicPadding,
-        animate: true,  
-        duration: 4000,  // Smooth transition time
-        linear: false,   // Ease in-out transition
-        maxZoom: 3.3      // Prevent over-zooming in large countries
-    });
-
-    // return bounds;
-});
-
-
-function drawBarChart(fuelData, countryName) {
-    // Define the known fuel categories in the correct order
-    const fuelCategories = [
-        "Coal", "Gas", "Oil", "Biomass", "Geothermal", "Tidal",
-        "Hydro", "Wind", "Solar", "Nuclear", "Other"
-    ];
-
-    // Define a color mapping for each fuel type
-    const fuelColors = {
-        "Biomass": "#9e5418",
-        "Coal": "#fc0303",
-        "Gas": "#e01075",
-        "Geothermal": "#8800ff",
-        "Hydro": "#0398fc",
-        "Nuclear": "#ff00f7",
-        "Oil": "#eb7f7f",
-        "Solar": "#e3bb0e",
-        "Tidal": "#1859c9",
-        "Wind": "#12c474",
-        "Other": "#a8a8a8"
-    };
-
-    // Create a default object with all categories set to zero
-    const defaultFuelData = fuelCategories.reduce((acc, fuelType) => {
-        acc[fuelType] = { count: 0, totalCapacity: 0 };
-        return acc;
-    }, {});
-
-    // List of fuel types that should be grouped under "Other"
-    const knownFuelTypes = new Set(fuelCategories.slice(0, -1)); // Everything except "Other"
-
-    // Merge actual fuel data with default structure, grouping unknowns into "Other"
-    for (const [fuelType, values] of Object.entries(fuelData)) {
-        const category = knownFuelTypes.has(fuelType) ? fuelType : "Other";
-        defaultFuelData[category].count += values.count;
-        defaultFuelData[category].totalCapacity += values.totalCapacity;
-    }
-
-    // Convert mergedFuelData into an array, keeping the desired order
-    const data = fuelCategories.map(fuelType => ({
-        fuelType,
-        totalCapacity: Number(defaultFuelData[fuelType].totalCapacity) || 0
-    }));
-
-    if (data.length === 0) {
-        console.warn("No data available for", countryName);
-        return;
-    }
-
-    // Set up chart dimensions
-    const width = 320;
-    const height = 300;
-    const margin = { top: 20, right: 20, bottom: 30, left: 60 };
-
-    d3.select("#chart-container").select("svg").remove();
-
-    const svg = d3.select("#chart-container")
-        .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform", `translate(${margin.left},${margin.top})`);
-
-    // X Scale (respects the predefined order)
-    const xScale = d3.scaleBand()
-        .domain(fuelCategories) // Use predefined fuel order
-        .range([0, width])
-        .padding(0.3);
-
-    const maxCapacity = d3.max(data, d => d.totalCapacity) || 1;
-    const yScale = d3.scaleLinear()
-        .domain([0, maxCapacity])
-        .nice()
-        .range([height, 0]); // Ensure 0 is at the bottom
-
-    // Draw bars (ensuring all categories are represented)
-    svg.selectAll(".bar")
-        .data(data)
-        .enter()
-        .append("rect")
-        .attr("class", "bar")
-        .attr("x", d => xScale(d.fuelType))
-        .attr("y", d => yScale(d.totalCapacity))
-        .attr("width", xScale.bandwidth())
-        .attr("height", d => height - yScale(d.totalCapacity))
-        .attr("fill", d => fuelColors[d.fuelType]); // Assign color based on fuel type
-
-    svg.append("g")
-        .attr("transform", `translate(0,${height})`)
-        .call(d3.axisBottom(xScale).tickSize(0))
-        // .tickSize(0)
-        .attr("color",  mystyle.getPropertyValue("--ter_color"))
-        .selectAll("text")
-        .attr("transform", "rotate(-40)")
-        .style("text-anchor", "end");
-    
-    svg.append("g").call(d3.axisLeft(yScale))
-    
-    // svg.append("g")
-    //     .call(d3.axisBottom(xScale).tickSize(0))
-
-    const textElements = svg.selectAll("text");
-    const pathAndLineElements = svg.selectAll("path, line");
-
-    textElements.style("fill", mystyle.getPropertyValue("--sec_color"));   // Change text color
-    pathAndLineElements.style("stroke", mystyle.getPropertyValue("--ter_color"));  // Change line/path color
-
-}
-
-map.on('click', 'B-Countries-fill', (e) => {
-    // console.log(e.features[0].properties)
-    let countryName = e.features[0].properties.iso3
-    const powerplantFeatures = map.queryRenderedFeatures({ layers: ['A-PrimStyle'] });
-    const filteredPowerplants = powerplantFeatures.filter(feature => feature.properties.country === countryName);
-
-    const fuelData = filteredPowerplants.reduce((acc, feature) => {
-        const fuelType = feature.properties.primary_fuel;
-        const capacity = parseInt(feature.properties.capacity_mw) || 0; // Ensure it's a number
-
-        if (!acc[fuelType]) {
-            acc[fuelType] = { count: 0, totalCapacity: 0 };
-        }
-
-        acc[fuelType].count += 1; // Increment count
-        acc[fuelType].totalCapacity += capacity; // Sum capacity
-
-        return acc;
-    }, {});
-
-    // Log the results
-    console.log(`Fuel type breakdown in ${countryName}:`, fuelData);
-
-    document.getElementById("graph-popup-id").style.display = "block"
-    document.getElementById("graph-coutry-id").innerHTML = `${e.features[0].properties.name}`;
-    drawBarChart(fuelData, countryName);
-});
-
-
-
-function closeDiv() {
-    document.getElementById("graph-popup-id").style.display = "none"
-
-    const filteredFeatures = map.querySourceFeatures('source-A', {
-        sourceLayer: sourceA_Layer // Only needed for vector sources
-    });
-
-    filteredFeatures.forEach(feature => {
-        map.setFeatureState(
-            { source: 'source-A', sourceLayer: sourceA_Layer, id: feature.id },
-            { dim_noselect: false }
-        );
-    });
-
-    map.setFeatureState(
-        { source: 'source-B', sourceLayer: sourceB_Layer, id: clickedPolygonId },
-        { click_B: false, highl_click_B: false}
-    );
-};
-
-
-map.on('click', (event) => {
-    const coordinates = event.lngLat; // Get the clicked coordinates
-    console.log(`Latitude: ${coordinates.lat}, Longitude: ${coordinates.lng}`);
-
-});
