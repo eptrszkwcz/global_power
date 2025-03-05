@@ -17,6 +17,7 @@
 .viz-but {
     height: calc(100% - 4px); /* Reduce height to fit the border */
     flex: 1;
+    flex-direction: column;
     background-color: var(--bg_color);
     padding: 20px;
     border-radius: 3px;
@@ -29,6 +30,18 @@
     box-sizing: border-box; /* Ensures border is included in the total size */
 }
 
+.viz-but > * {
+    opacity: 0.3;
+}
+
+.viz-but:hover > * {
+    opacity: 1;
+}
+
+.viz-but.active > * {
+    opacity: 1;
+}
+
 .viz-but:hover {
     background-color: var( --bghov_color);
     color: var( --prim_color);
@@ -38,4 +51,23 @@
     background-color: var( --bghov_color);
     color: var( --prim_color);
     outline: 1px solid var( --prim_color);;
+}
+
+.button-icon{
+    margin-bottom: 10px;
+}
+
+.button-icon {
+    height: 40px;
+    width: auto;
+}
+
+.graph-summary{
+    color: var( --sec_color);
+    padding-left: 20px;
+    padding-right: 20px;
+    font-style: italic;
+    font-size: 16px;
+    line-height: 24px;
+
 }

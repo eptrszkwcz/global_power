@@ -335,11 +335,11 @@ map.on('load', () => {
 
 
     // CHANGE MOUSE APPEARANCE --------------------------------------------------------------- 
-    map.on('mouseenter', 'A-PrimStyle', () => {
+    map.on('mouseenter', 'B-Countries-fill', () => {
         map.getCanvas().style.cursor = 'pointer';
     });
     
-    map.on('mouseleave', 'A-PrimStyle', () => {
+    map.on('mouseleave', 'B-Countries-fill', () => {
         map.getCanvas().style.cursor = 'move';
     });
 
@@ -677,6 +677,7 @@ map.on('style.load', () => {
 });
 
 
+// VIZ BUTTON FUNCTIONALITY ---------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", function () {
     const buttons = document.querySelectorAll(".viz-but");
 
@@ -697,24 +698,36 @@ document.addEventListener("DOMContentLoaded", function () {
                 let isocode = fFeatures[0].properties.country
 
                 displayChart(viz_type, fFeatures, isocode)
+                document.querySelectorAll(".legend-container").forEach(div => div.style.display = "none");
+                document.getElementById(`legend-${index}`).style.display = "block";
             });  
+
+            
         });
     });
 });
 
 function displayChart(viz_type, fFeatures, isocode){
+    let country_long = fFeatures[0].properties.country_long
+    let country_short = fFeatures[0].properties.country
     if (viz_type === 0){
         let fuelData = process_FuelType(fFeatures)
-        console.log(fuelData)
         chart_FuelType(fuelData)
-        chart_CapPerPop("", fuelData, isocode);
+        chart_CapPerPop(country_short, country_long, fuelData, isocode);
         // drawBarChart(fuelData, countryName);
     } if (viz_type === 1){
-        chart_YearBuilt(fFeatures)
+        chart_YearBuilt(country_short, country_long, fFeatures)
     } if (viz_type === 2){
         let renewData = process_Renewable(fFeatures)
-        chart_Renewable({ continent: "Custom Country", Renewable: renewData.percRenewable , Nuclear: renewData.percNuclear , Nonrenewable: renewData.percNonRenewable});
+        chart_Renewable({ continent: country_short, Renewable: renewData.percRenewable , Nuclear: renewData.percNuclear , Nonrenewable: renewData.percNonRenewable}, country_long);
     }
 }
 
+
+
+
+
+// document.addEventListener("DOMContentLoaded", () => {
+//     document.getElementById("console_butt-id").addEventListener("click", toggleNav);   
+// });
 

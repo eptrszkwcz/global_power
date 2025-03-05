@@ -49,105 +49,154 @@ body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, s
     <div class = "title-block">
         <div class = "title">Global Power</div>
         <div class = "leg-line"></div>
-        <div class = "proj-des">There are over 300,000 power generating facilities on Earth. This map catalogs their location, generating capacity, and other features.</div>
+        <div class = "proj-des">There are over 34,000 power generating facilities on Earth. This map catalogs their location, generating capacity, and other features.</div>
         <!-- <p>Source: Global Power Dataset 1.3.0, World Resources Institue 2021.</p> -->
         <br>
         <div class = "proj-des">Source: Global Power Dataset 1.3.0, World Resources Institue 2021.</div>
     </div>
     <div class = "title-block">
-        <div class = "legend-label">Primary Fuel</div>
-        <div class = "legend" id = "toggle group">
-
-            <div class = "legend-entry active">
-                <div class = "symbol active" style="background-color: #fc0303;" id="Coal_symbol"></div>
-                <div class = "symbol-label active">Coal</div>
-                <div class = "toggle-space">
-                    <div class = "toggle active" id = "Coal"></div>
+        <div class="legend-container" id = "legend-0" style="display: block;">
+            <div class = "legend-label">Primary Fuel</div>
+            <div class = "legend" id = "toggle group">
+    
+                <div class = "legend-entry active">
+                    <div class = "symbol active" style="background-color: #fc0303;" id="Coal_symbol"></div>
+                    <div class = "symbol-label active">Coal</div>
+                    <div class = "toggle-space">
+                        <div class = "toggle active" id = "Coal"></div>
+                    </div>
                 </div>
-            </div>
-
-            <div class = "legend-entry active">
-                <div class = "symbol active" style="background-color: #e01075;" id="Gas_symbol"></div>
-                <div class = "symbol-label active">Gas</div>
-                <div class = "toggle-space">
-                    <div class = "toggle active" id = "Gas"></div>
+    
+                <div class = "legend-entry active">
+                    <div class = "symbol active" style="background-color: #e01075;" id="Gas_symbol"></div>
+                    <div class = "symbol-label active">Gas</div>
+                    <div class = "toggle-space">
+                        <div class = "toggle active" id = "Gas"></div>
+                    </div>
                 </div>
-            </div>
-
-            <div class = "legend-entry active">
-                <div class = "symbol active" style="background-color: #eb7f7f;" id="Oil_symbol"></div>
-                <div class = "symbol-label active">Oil</div>
-                <div class = "toggle-space">
-                    <div class = "toggle active" id = "Oil"></div>
+    
+                <div class = "legend-entry active">
+                    <div class = "symbol active" style="background-color: #eb7f7f;" id="Oil_symbol"></div>
+                    <div class = "symbol-label active">Oil</div>
+                    <div class = "toggle-space">
+                        <div class = "toggle active" id = "Oil"></div>
+                    </div>
                 </div>
-            </div>
-
-            <div class = "legend-entry active">
-                <div class = "symbol active" style="background-color: #9e5418;" id="Biomass_symbol"></div>
-                <div class = "symbol-label active">Biomass</div>
-                <div class = "toggle-space">
-                    <div class = "toggle active" id = "Biomass"></div>
+    
+                <div class = "legend-entry active">
+                    <div class = "symbol active" style="background-color: #9e5418;" id="Biomass_symbol"></div>
+                    <div class = "symbol-label active">Biomass</div>
+                    <div class = "toggle-space">
+                        <div class = "toggle active" id = "Biomass"></div>
+                    </div>
                 </div>
-            </div>
-
-            <div class = "legend-entry active">
-                <div class = "symbol active" style="background-color: #8800ff;" id="Geothermal_symbol"></div>
-                <div class = "symbol-label active">Geothermal</div>
-                <div class = "toggle-space">
-                    <div class = "toggle active" id = "Geothermal"></div>
+    
+                <div class = "legend-entry active">
+                    <div class = "symbol active" style="background-color: #8800ff;" id="Geothermal_symbol"></div>
+                    <div class = "symbol-label active">Geothermal</div>
+                    <div class = "toggle-space">
+                        <div class = "toggle active" id = "Geothermal"></div>
+                    </div>
                 </div>
-            </div>
-
-            <div class = "legend-entry active">
-                <div class = "symbol active" style="background-color: #1859c9;" id="Tidal_symbol"></div>
-                <div class = "symbol-label active">Tidal</div>
-                <div class = "toggle-space">
-                    <div class = "toggle active" id = "Tidal"></div>
+    
+                <div class = "legend-entry active">
+                    <div class = "symbol active" style="background-color: #1859c9;" id="Tidal_symbol"></div>
+                    <div class = "symbol-label active">Tidal</div>
+                    <div class = "toggle-space">
+                        <div class = "toggle active" id = "Tidal"></div>
+                    </div>
                 </div>
-            </div>
-
-            <div class = "legend-entry active">
-                <div class = "symbol active" style="background-color: #0398fc;" id="Hydro_symbol"></div>
-                <div class = "symbol-label active">Hydro</div>
-                <div class = "toggle-space">
-                    <div class = "toggle active" id = "Hydro"></div>
+    
+                <div class = "legend-entry active">
+                    <div class = "symbol active" style="background-color: #0398fc;" id="Hydro_symbol"></div>
+                    <div class = "symbol-label active">Hydro</div>
+                    <div class = "toggle-space">
+                        <div class = "toggle active" id = "Hydro"></div>
+                    </div>
                 </div>
-            </div>
-
-            <div class = "legend-entry active" >
-                <div class = "symbol active" style="background-color: #12c474;" id="Wind_symbol"></div>
-                <div class = "symbol-label active">Wind</div>
-                <div class = "toggle-space">
-                    <div class = "toggle active" id = "Wind"></div>
+    
+                <div class = "legend-entry active" >
+                    <div class = "symbol active" style="background-color: #12c474;" id="Wind_symbol"></div>
+                    <div class = "symbol-label active">Wind</div>
+                    <div class = "toggle-space">
+                        <div class = "toggle active" id = "Wind"></div>
+                    </div>
                 </div>
+    
+                <div class = "legend-entry active">
+                    <div class = "symbol active" style="background-color: #e3bb0e;" id="Solar_symbol"></div>
+                    <div class = "symbol-label active">Solar</div>
+                    <div class = "toggle-space">
+                        <div class = "toggle active" id = "Solar"></div>
+                    </div>
+                </div>
+    
+                <div class = "legend-entry active">
+                    <div class = "symbol active" style="background-color: #ff00f7;" id="Nuclear_symbol"></div>
+                    <div class = "symbol-label active">Nuclear</div>
+                    <div class = "toggle-space">
+                        <div class = "toggle active" id = "Nuclear"></div>
+                    </div>
+                </div>
+    
+                <div class = "legend-entry active" style = "margin-bottom: 0;">
+                    <div class = "symbol active" style="background-color: #a8a8a8;" id="Other_symbol"></div>
+                    <div class = "symbol-label active">Other</div>
+                    <div class = "toggle-space">
+                        <div class = "toggle active" id = "Other"></div>
+                    </div>
+                </div>
+    
             </div>
-
+        </div>
+        <div class="legend-container" id = "legend-1">
+            <div class = "legend-label">Commissioning Year</div>
+                <div class = "entry-row">
+                    <div class = "row-label">Year</div>
+                </div>
+                <div class = "entry-row">
+                    <div class = "gradient1"></div>
+                </div>
+                <div class = "entry-row gradlabel">
+                    <div class = "gradient-label left">1900</div>
+                    <div class = "gradient-label">1960</div>
+                    <!-- <div class = "gradient-label">##</div> -->
+                    <div class = "gradient-label right">2020</div>
+                </div>
+                <div class = "entry-row">
+                    <div class = "entry-description">
+                        Year built records the first years that the building was constructed and does not include years for building modifications.
+                    </div>
+                </div>
+        </div>
+        <div class="legend-container" id = "legend-2">
+            <div class = "legend-label">Renewable Fuel Type</div>
             <div class = "legend-entry active">
-                <div class = "symbol active" style="background-color: #e3bb0e;" id="Solar_symbol"></div>
-                <div class = "symbol-label active">Solar</div>
-                <div class = "toggle-space">
+                <div class = "symbol FT active" style="background-color: rgba(0, 222, 141, 0.6);" id="RenewableFT_symbol"></div>
+                <div class = "symbol-label active">Renewable</div>
+                <!-- <div class = "toggle-space">
                     <div class = "toggle active" id = "Solar"></div>
-                </div>
+                </div> -->
             </div>
 
             <div class = "legend-entry active">
-                <div class = "symbol active" style="background-color: #ff00f7;" id="Nuclear_symbol"></div>
-                <div class = "symbol-label active">Nuclear</div>
-                <div class = "toggle-space">
+                <div class = "symbol FT active" style="background-color: rgba(255, 0, 93, 0.7);" id="NonRenewableFT_symbol"></div>
+                <div class = "symbol-label active">Non-Renewable</div>
+                <!-- <div class = "toggle-space">
                     <div class = "toggle active" id = "Nuclear"></div>
-                </div>
+                </div> -->
             </div>
 
-            <div class = "legend-entry active" style = "margin-bottom: 0;">
-                <div class = "symbol active" style="background-color: #a8a8a8;" id="Other_symbol"></div>
-                <div class = "symbol-label active">Other</div>
-                <div class = "toggle-space">
-                    <div class = "toggle active" id = "Other"></div>
-                </div>
+            <div class = "legend-entry active">
+                <div class = "symbol FT active" style="background-color: rgba(179, 30, 92, 0.6);" id="NuclearFT_symbol"></div>
+                <div class = "symbol-label active">Nuclear</div>
+                <!-- <div class = "toggle-space">
+                    <div class = "toggle active" id = "Nuclear"></div>
+                </div> -->
             </div>
-
         </div>
     </div>
+
     <div class = "title-block">
             <!-- SIZE LEGEND ENTRY  -->
             <div class = "entry-dropdown active" id="entry-0">
@@ -170,10 +219,10 @@ body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, s
                         <div class = "size-label">100 MW</div>
                     </div>
                     <div class = "circle-container">
-                        <div class = "size-label">2.5k MW</div>
+                        <div class = "size-label">5k MW</div>
                     </div>
                     <div class = "circle-container">
-                        <div class = "size-label">5k MW</div>
+                        <div class = "size-label">10k MW</div>
                     </div>
                 </div>
                 <div class = "entry-row">
@@ -182,7 +231,7 @@ body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, s
                     </div>
                 </div>
             </div>
-            <div class = "entry-dropdown" id="entry-1">
+            <!-- <div class = "entry-dropdown" id="entry-1">
                 <div class = "entry-row">
                     <div class = "legend-label">Generated Power</div>
                 </div>
@@ -245,7 +294,7 @@ body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, s
                         The ratio of generated energy to what would be generated in a year-long max-capacity scenario. 
                     </div>
                 </div>
-            </div>
+            </div> -->
     </div>
 
 </div>
@@ -259,17 +308,32 @@ body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, s
     </div>
 </div> -->
 
-<div class="button-container">
+<!-- <div class="button-container">
     <div class="viz-but active" id="viz-but-type">Fuel Type</div>
-    <div class="viz-but" id="viz-but-year">Year Built</div>
+    <div class="viz-but" id="viz-but-year">Facility Age</div>
     <div class="viz-but" id="viz-but-renew">Renewable</div>
+</div> -->
+
+<div class="button-container">
+    <div class="viz-but active" id="viz-but-type">
+        <img src="./assets/icons/Icon_FuelType6.svg" alt="icon of sun and exhaust tower" class = "button-icon">
+        Fuel Type
+    </div>
+    <div class="viz-but" id="viz-but-year">
+        <img src="./assets/icons/Icon_Age.svg" alt="icon of sun and exhaust tower" class = "button-icon">
+        Facility Age
+    </div>
+    <div class="viz-but" id="viz-but-renew">
+        <img src="./assets/icons/Icon_Renewable.svg" alt="icon of sun and exhaust tower" class = "button-icon">
+        Renewable
+    </div>
 </div>
 
 
 <div class = "graph-popup">
     <div class = "title-block" id="graph-popup-id">
         <div class="graph-title">
-            <div class = "title" id = "graph-coutry-id">WTF</div>
+            <div class = "title" id = "graph-coutry-id"></div>
             <button class="close-button" id="graphpopup-close-id">x</button>
         </div>
         <div class = "leg-line" style="margin-bottom: 20px;" ></div>
@@ -277,6 +341,7 @@ body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, s
         <div id="chart-container">
             <div id="first-container"></div>
             <div id="second-container"></div>
+            <div id="second-container">The United States generates 3,587 W of electricity per person.</div>
         </div>
     </div>
 </div>

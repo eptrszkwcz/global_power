@@ -26,9 +26,5 @@ export async function getCountryPopulation(iso3Code) {
       return 'Error retrieving data';
     }
   }
-  
-  // Example usage: Get population for the United States (ISO3 code: USA)
-  getCountryPopulation('USA').then(population => {
-    console.log(`Population of the USA: ${population}`);
-  });
+
   
