@@ -40,9 +40,7 @@ body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, s
 <!-- LEGEND -->
 
 <div class = "console_butt" id="console_butt-id">
-    <div class = "console_butt_text">
-        <a>&#9664</a>
-    </div>
+    <img src="./assets/icons/Icon_arrow_out.svg" alt="arrow left" class = "console-butt-arrow">
 </div>
 
 <div class = "console" id="console-id">
@@ -58,6 +56,14 @@ body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, s
         <div class="legend-container" id = "legend-0" style="display: block;">
             <div class = "legend-label">Primary Fuel</div>
             <div class = "legend" id = "toggle group">
+
+                <div class = "legend-entry active" id = "select-all">
+                    <div class = "symbol active" style="background-color: rgba(0,0,0,0);" id="SA_symbol"></div>
+                    <div class = "symbol-label active" style = "font-size: 13px;">Select All Types</div>
+                    <div class = "toggle-space">
+                        <div class = "toggle active" id = "select-all-toggle"></div>
+                    </div>
+                </div>
     
                 <div class = "legend-entry active">
                     <div class = "symbol active" style="background-color: #fc0303;" id="Coal_symbol"></div>
@@ -316,7 +322,7 @@ body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, s
 
 <div class="button-container">
     <div class="viz-but active" id="viz-but-type">
-        <img src="./assets/icons/Icon_FuelType6.svg" alt="icon of sun and exhaust tower" class = "button-icon">
+        <img src="./assets/icons/Icon_FuelType7.svg" alt="icon of sun and exhaust tower" class = "button-icon">
         Fuel Type
     </div>
     <div class="viz-but" id="viz-but-year">
@@ -339,9 +345,6 @@ body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, s
         <div class = "leg-line" style="margin-bottom: 20px;" ></div>
         <!-- <div class="graph-type">Capacity by Fuel Type <span id="graph-unit-id">Megawatts</span></div> -->
         <div id="chart-container">
-            <div id="first-container"></div>
-            <div id="second-container"></div>
-            <div id="second-container">The United States generates 3,587 W of electricity per person.</div>
         </div>
     </div>
 </div>

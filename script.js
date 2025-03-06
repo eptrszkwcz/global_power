@@ -32,7 +32,8 @@ let countryName = null;
 let viz_type = 0;
 
 
-const cats = ['Biomass','Coal','Gas','Geothermal','Hydro','Nuclear','Oil','Solar','Tidal','Wind'];
+const cats = ['Biomass','Coal','Gas','Geothermal','Hydro','Nuclear','Oil','Solar','Tidal','Wind','Other'];
+const other_cats = ['Storage','Cogeneration', 'Petcoke', 'Waste', 'Other']
 var filter_cats = [];
 let country_mode = false;
 
@@ -41,8 +42,8 @@ const anals = ["anal1", "anal2", "anal3"];
 let console_tog = 1;
 
 const sourceA_Layer = "Global_Power_Plants-d5dhk4"
-// const sourceB_Layer = "All_Countries-6jqzer"
-const sourceB_Layer = "All_Countries_zoomReady-6azvlf"
+const sourceB_Layer = "All_Countries_zoomReadyClip-8ha9gc"
+// const sourceB_Layer = "All_Countries_zoomReady-6azvlf"
 
 
 const radius_styling = [
@@ -77,7 +78,7 @@ const circle_viz = [
         'Solar', '#e3bb0e',
         'Tidal', '#1859c9',
         'Wind', '#12c474',
-        /* other */ '#000000'
+        /* other */ '#a8a8a8'
             ],
     ['case',
         ['has', 'commissioning_year'], 
@@ -110,8 +111,8 @@ map.on('load', () => {
 
     map.addSource('source-B', {
         'type': 'vector',
-        'url': "mapbox://ptrszkwcz.1x66qshk",
-        // 'url': "mapbox://ptrszkwcz.c1dnkwtp",
+        // 'url': "mapbox://ptrszkwcz.1x66qshk",
+        'url': "mapbox://ptrszkwcz.d5sf0965",
         'promoteId':'color_code' // Because mapbox fucks up when assigning IDs, make own IDs in QGIS and then set here!!!
     });
 
@@ -455,7 +456,6 @@ map.on('load', () => {
         const hash = "#"
         const ID_name = hash.concat(cats[i])
 
-
         const sessionDiv = document.querySelector(ID_name);
 
         // console.log(sessionDiv)
@@ -466,15 +466,28 @@ map.on('load', () => {
             let filter_select = e.target.id
 
             if (filter_cats.includes(filter_select)){
-                const del_index = filter_cats.indexOf(filter_select);
-                const new_filter = filter_cats.splice(del_index, 1);
+                if (filter_select === "Other") {
+                    for (let i = 0; i < other_cats.length; i++) {
+                        const del_index = filter_cats.indexOf(other_cats[i]);
+                        const new_filter = filter_cats.splice(del_index, 1);
+                    }
+                } else {
+                    const del_index = filter_cats.indexOf(filter_select);
+                    const new_filter = filter_cats.splice(del_index, 1);
+                }
                 sessionDiv.classList.add("active");
                 parent_element.classList.add("active")
                 let ID_symbol = cats[i].concat("_symbol")
                 document.getElementById(ID_symbol).classList.add("active");
-            }
-            else{
-                const new_filter = filter_cats.push(filter_select)
+            } else{
+                if (filter_select === "Other") {
+                    for (let i = 0; i < other_cats.length; i++) {
+                        const new_filter = filter_cats.push(other_cats[i])
+                    }
+                } else {
+                    const new_filter = filter_cats.push(filter_select)
+                }
+                
                 sessionDiv.checked = false;
                 sessionDiv.classList.remove("active");
                 parent_element.classList.remove("active")
@@ -509,65 +522,7 @@ map.on('load', () => {
             runFunctions();
 
         });
-    }
-
-    // CLICK TO CHANGE ANALYSIS ---------------------------------------------------------------
-
-    // const dropDownButton = document.querySelector('#dropdown-butt');
-
-    // for (let i = 0; i < anals.length; i++) {
-
-    //     const hash = "#"
-    //     const ID_name = hash.concat(anals[i])
-
-    //     const sessionDiv = document.querySelector(ID_name);
-
-    //     sessionDiv.onclick = function (e) {
-    //         // const clickedLayer = this.textContent;
-    //         const clickedLayer = sessionDiv.id
-
-    //         e.preventDefault();
-    //         e.stopPropagation();
-
-    //         for (let i = 0; i < anals.length; i++){
-    //             const hash = "#"
-    //             const ID_name = hash.concat(anals[i])
-
-    //             if (anals[i] != clickedLayer){
-    //                 // console.log(i)
-    //                 // map.setLayoutProperty(anals[i], 'visibility', 'none');
-
-    //                 let noclickDiv = document.querySelector(ID_name);
-    //                 const noclickclass = noclickDiv.classList;
-    //                 noclickclass.remove("checked")
-
-    //                 document.getElementById("entry-".concat(i)).classList.remove("active");
-
-    //             }
-    //             else {
-    //                 // map.setLayoutProperty(anals[i], 'visibility', 'visible');
-    //                 // 'A-PrimStyle' = anals[i]
-                    
-    //                 // console.log(dropDownButton.textContent)
-    //                 dropDownButton.textContent = e.target.text
-    //                 map.setPaintProperty('A-PrimStyle', 'circle-radius', radius_styling[i]);
-    //                 map.setPaintProperty('A-Hover-point', 'circle-radius', radius_styling[i]);
-    //                 map.setPaintProperty('A-Click-point', 'circle-radius', radius_styling[i]);
-
-    //                 document.getElementById("entry-".concat(i)).classList.add("active");
-    //                 // document.getElementById("entry-".concat(2)).classList.toggle("active");
-    //                 // document.getElementById("entry-".concat(intlist[i+1])).classList.remove("active");
-                
-    //                 const clickclass = sessionDiv.classList;
-    //                 let clickDiv = document.querySelector(ID_name);
-    //                 const noclickclass = clickDiv.classList;
-    //                 clickclass.add("checked")
-    //             }
-    //         }
-    //     }
-    // }
-
-    
+    }    
     
 });
 
@@ -581,19 +536,13 @@ function toggleNav(){
     if (console_tog === 1){
         document.getElementById("console-id").style.left = "-315px"
         document.getElementById("console_butt-id").style.left = "-5px"
-        document.getElementById("console_butt-id").style.paddingTop = "8px";
-        document.getElementById("console_butt-id").style.paddingBottom = "0px";
-        document.getElementById("console_butt-id").innerHTML = `&#9654`;
+        document.getElementById("console_butt-id").innerHTML = `<img src="./assets/icons/Icon_arrow_in.svg" alt="arrow right" class = "console-butt-arrow">`;
         console_tog = 0
-        console.log("YEES 0")
-        // return console_tog
     }
     else {
         document.getElementById("console-id").style.left = "0px";
         document.getElementById("console_butt-id").style.left = "310px"
-        document.getElementById("console_butt-id").innerHTML = `&#9664`;
-        document.getElementById("console_butt-id").style.paddingTop = "4px";
-        document.getElementById("console_butt-id").style.paddingBottom = "3px";
+        document.getElementById("console_butt-id").innerHTML = `<img src="./assets/icons/Icon_arrow_out.svg" alt="arrow left" class = "console-butt-arrow">`;
         console_tog = 1
         // return console_tog
     }
@@ -724,10 +673,39 @@ function displayChart(viz_type, fFeatures, isocode){
 }
 
 
+// SELECT ALL TOGGLE FUNCTIONALITY ---------------------------------------------------------------
 
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("select-all-toggle").addEventListener("click", selectAll);   
+});
 
+function selectAll(){
+    const selectAllDiv = document.getElementById("select-all");
+    
+    const parentDiv = document.getElementById("legend-0");
+    const allDescendants = parentDiv.querySelectorAll("*")
 
-// document.addEventListener("DOMContentLoaded", () => {
-//     document.getElementById("console_butt-id").addEventListener("click", toggleNav);   
-// });
+    if (selectAllDiv && selectAllDiv.classList.contains("active")) {
+        console.log(filter_cats)
+        allDescendants.forEach(element => element.classList.remove("active"));
+        for (let i = 0; i < cats.length; i++){
+            if (!filter_cats.includes(cats[i])){
+                filter_cats.push(cats[i])
+            }
+        }
+        for (let i = 0; i < other_cats.length; i++){
+            if (!filter_cats.includes(other_cats[i])){
+                filter_cats.push(other_cats[i])
+            }
+        }
+        composite_filter(country_mode = false, filter_cats, countryName)
+    } else {
+        console.log("activating")
+        allDescendants.forEach(element => element.classList.add("active"));
+        filter_cats = []
+        composite_filter(country_mode = false, filter_cats, countryName)
+    }
+
+}
+
 
