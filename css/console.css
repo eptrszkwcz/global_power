@@ -270,7 +270,7 @@
 
 .console_butt {
     position: fixed;
-    top: 240px;
+    top: 170px;
     left: 310px;
     height: 24px;
     width: 24px;
@@ -278,15 +278,18 @@
     margin: 15px;
     font-size: 14px;
     text-align: center;
-    color: var(--ter_color);
+    /* color: var(--ter_color); */
     /* background-color: var(--bghov_color); */
     background-color: var(--bg_color);
     opacity: 1;
     cursor: pointer;
     z-index: 1;
     transition: 0.4s;
-    padding-top: 4px;
-    padding-bottom: 3px;
+    /* padding-top: 4px;
+    padding-bottom: 3px; */
+    display: flex;
+    justify-content: center;  /* Centers horizontally */
+    align-items: center; 
 }
 
 .console_butt:hover{
@@ -294,16 +297,21 @@
     color: var(--highl_color);
 }
 
-.console_butt_text{
+/* .console_butt_text{
     margin: 0;
     position: absolute;
     top: 50%;
     left: 50%;
     -ms-transform: translate(-50%, -50%);
     transform: translate(-50%, -50%);
+} */
+
+.console-butt-arrow{
+    height: 14px;
+    width: auto;
 }
 
-.button-icon {
-    height: 50px;
-    width: auto;
+#select-all{
+    margin-top: 12px;
+    /* margin-bottom: 24px; */
 }
