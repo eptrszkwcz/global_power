@@ -297,15 +297,6 @@
     color: var(--highl_color);
 }
 
-/* .console_butt_text{
-    margin: 0;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    -ms-transform: translate(-50%, -50%);
-    transform: translate(-50%, -50%);
-} */
-
 .console-butt-arrow{
     height: 14px;
     width: auto;
