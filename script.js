@@ -9,7 +9,7 @@ import { getCountryPopulation } from './populationAPI.js';
 
 const filterGroup = document.getElementById('filter-group');
 
-mapboxgl.accessToken = 'sk.eyJ1IjoicHRyc3prd2N6IiwiYSI6ImNtN3lkbXl4bjA5Nm0ybHFiYzg4cGhyYjAifQ.Wn-IpKMyV5xTpS683NL4oQ';
+mapboxgl.accessToken = 'pk.eyJ1IjoicHRyc3prd2N6IiwiYSI6ImNtN3lmOHpoMjA5a2cydHB6N3VwdWFjYjYifQ.6QML2D8Dv-MjO6JI6BwdDQ';
  
 const map = new mapboxgl.Map({
     container: 'map', // container ID
