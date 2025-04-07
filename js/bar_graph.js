@@ -202,7 +202,7 @@ function drawStackedBar_fuel(svg, data, yPosition, width, barHeight, xScale, col
 
 export function chart_CapPerPop(customCountryName, country_long, customEnergyData, isocode){
     getCountryPopulation(isocode).then(population => {
-        // console.log(`pop: ${population}`);
+        console.log(`pop: ${population}`);
         chart_CapPerPop_prelim(customCountryName, country_long, customEnergyData, population)
       });
 }

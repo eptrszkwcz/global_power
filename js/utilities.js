@@ -1,8 +1,28 @@
-// var cssclass = document.querySelector(":root");
-// var mystyle = window.getComputedStyle(cssclass);
+// This allows for filtering by country and fuel type
+export function composite_filter(country_mode, filter_cats, countryName, map){
+    if (filter_cats.length > 0){
+        if (country_mode){
+            map.setFilter('A-PrimStyle', [
+                "all",
+                ['match', ['get', 'primary_fuel'], filter_cats,false,true],
+                ['==', ['get', 'country'], countryName]
+            ]);
+        } else{
+            map.setFilter('A-PrimStyle',['match', ['get', 'primary_fuel'], filter_cats,false,true])
+        }
+    }
+    else{
+        if (country_mode){
+            map.setFilter('A-PrimStyle',['==', ['get', 'country'], countryName])
+        }else{
+            map.setFilter('A-PrimStyle', null)
+        }
+    }
+}
+
 
 export function zoom_to_bounds(feature){
-    // console.log(feature)
+    console.log(feature)
 
     let ftr_width = feature.properties.Bounds_width
     let ftr_height = feature.properties.Bounds_height
@@ -29,6 +49,8 @@ export function numberWithCommas(x) {
         x = x.replace(pattern, "$1,$2");
     return x;
 }
+
+
 
 
 
