@@ -9,8 +9,7 @@ import { getCountryPopulation } from './populationAPI.js';
 
 const filterGroup = document.getElementById('filter-group');
 
-// mapboxgl.accessToken = 'pk.eyJ1IjoicHRyc3prd2N6IiwiYSI6ImNtOHMwbmJvdTA4ZnIya290M2hlbmswb2YifQ.qQZEM9FzU2J-_z0vYoSBeg';
-mapboxgl.accessToken = 'pk.eyJ1IjoicHRyc3prd2N6IiwiYSI6ImNpdHVuOXpqMzAwMmEybnF2anZwbTd4aWcifQ.MF8M3qBg0AEp_-10FB4juw';
+mapboxgl.accessToken = 'pk.eyJ1IjoicHRyc3prd2N6IiwiYSI6ImNtOHMwbmJvdTA4ZnIya290M2hlbmswb2YifQ.qQZEM9FzU2J-_z0vYoSBeg';
  
 const map = new mapboxgl.Map({
     container: 'map', // container ID
@@ -580,6 +579,17 @@ map.on('load', () => {
                     item.className = 'autocomplete-item';
                     item.textContent = name;
                     item.addEventListener('click', () => {
+
+                        // something here is messed up!! 
+                        let off_features = map.querySourceFeatures('source-B', { sourceLayer: sourceB_Layer });
+                        off_features.forEach(feature => {
+                            console.log("OH")
+                            map.setFeatureState(
+                                { source: 'source-B', sourceLayer: sourceB_Layer, id: feature.id },
+                                { clic_B: false, highl_click_B: false }
+                            );
+                        });
+
                         input.value = name;
                         listContainer.innerHTML = '';
                         const iso3 = uniqueCountries[name].properties.iso;
@@ -588,7 +598,8 @@ map.on('load', () => {
                         // below is same as when clicked +/- 
                         clickedPolygonId = iso3;
                         console.log(clickedPolygonId)
-            
+
+                        console.log("SHAKIRA")
                         map.setFeatureState(
                             { source: 'source-B', sourceLayer: sourceB_Layer, id: clickedPolygonId },
                             { clic_B: true, highl_click_B: true}
@@ -619,13 +630,13 @@ map.on('load', () => {
             
                             displayChart(viz_type, fFeatures, isocode)
                         });  
-                
-
-
+                        input.value = input.defaultValue
+            
                     });
                     listContainer.appendChild(item);
                 }
             });
+            
         });
     
         // Optional: clear dropdown if you click outside

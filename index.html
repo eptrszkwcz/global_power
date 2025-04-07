@@ -57,13 +57,7 @@ body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, s
             <div class = "legend-label">Primary Fuel</div>
             <div class = "legend" id = "toggle group">
 
-                <div class = "legend-entry active" id = "select-all">
-                    <div class = "symbol active" style="background-color: rgba(0,0,0,0);" id="SA_symbol"></div>
-                    <div class = "symbol-label active" style = "font-size: 13px;">Select All Types</div>
-                    <div class = "toggle-space">
-                        <div class = "toggle active" id = "select-all-toggle"></div>
-                    </div>
-                </div>
+               
     
                 <div class = "legend-entry active">
                     <div class = "symbol active" style="background-color: #fc0303;" id="Coal_symbol"></div>
@@ -145,11 +139,19 @@ body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, s
                     </div>
                 </div>
     
-                <div class = "legend-entry active" style = "margin-bottom: 0;">
+                <div class = "legend-entry active">
                     <div class = "symbol active" style="background-color: #a8a8a8;" id="Other_symbol"></div>
                     <div class = "symbol-label active">Other</div>
                     <div class = "toggle-space">
                         <div class = "toggle active" id = "Other"></div>
+                    </div>
+                </div>
+
+                <div class = "legend-entry active" id = "select-all" style="margin-bottom: 0;">
+                    <div class = "symbol active" style="background-color: rgba(0,0,0,0); " id="SA_symbol"></div>
+                    <div class = "symbol-label active" style = "font-size: 13px;">Select All Types</div>
+                    <div class = "toggle-space">
+                        <div class = "toggle active" id = "select-all-toggle"></div>
                     </div>
                 </div>
     
@@ -259,7 +261,7 @@ body { margin: 0; padding: 0; font-family: 'Helvetica Neue', Helvetica, Arial, s
 <div class="search-bar" id="search-container">
     <input id="country-search" type="text" placeholder="Search for a country..." />
     <div id="autocomplete-list"></div>
-  </div>
+</div>
 
 
 <div class = "graph-popup">
