@@ -4,12 +4,17 @@
 
 .mapboxgl-popup-content {
   font: var(--font_default);
-  padding: 15px;
-  width: 220px;
+  width: 120%;
   background: var(--bg_color);
   color: var(--sec_color);
   display: inline-block;
   border-radius: 15px;
+  padding: 0px;
+}
+
+.pop-container {
+  width: 260px;
+  padding: 15px;
 }
 
 .pop-title {
@@ -22,6 +27,7 @@
   display: flex;
   align-items: center;
   margin-bottom: 10px;
+  padding-right: 15px;
 }
 
 .pop-field {
@@ -50,6 +56,7 @@
   background: var(--highl_color);
   margin: auto;
   margin-bottom: 20px;
+  padding-right: 15px;
 }
 
 .mapboxgl-popup-anchor-top .mapboxgl-popup-tip,
@@ -69,4 +76,19 @@
     border-left-color: var(--bg_color);
       }
 
+
+.country-pop-container{
+  /* width: 120px; */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* margin-bottom: 10px; */
+  /* margin: 5px; */
+}
+
+.country-pop-value{
+  font-weight: 600;
+  color: var(--prim_color);
+  font-size: 12px;
+}
   
